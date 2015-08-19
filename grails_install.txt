@@ -1,0 +1,8 @@
+1. Aquire GVM in way described at http://gvmtool.net/
+2. Use it to download Grails 2.4.4
+>gvm install grails 2.4.4
+3. Go to root directory of project tree
+4. Issue command grails clean war
+>grails clean war
+5. Once the command is done, there should be a file named InviteTravel.war located in the target/ folder
+6. This can be uploaded to a servlet container
