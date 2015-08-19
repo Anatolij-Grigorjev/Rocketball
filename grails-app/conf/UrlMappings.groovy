@@ -21,6 +21,15 @@ class UrlMappings {
             action = 'upload'
         }
 
+        "/video/$id" {
+            controller = 'media'
+            action = 'getVideo'
+        }
+
+        "/album/$id" {
+            controller = 'media'
+            action = 'getPhotoAlbum'
+        }
 
         "/reg/pic/$id?" {
             controller = 'login'

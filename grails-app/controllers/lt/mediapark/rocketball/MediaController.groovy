@@ -41,4 +41,42 @@ class MediaController {
     }
 
 
+    def getVideo = {
+        Long requestorId = Long.parseLong(params.requestor)
+        Long vidId = Long.parseLong(params.id)
+
+        def video = mediaService.getVideoFromMessage(vidId, requestorId)
+        if (!video) {
+            return render(status: 404, message: 'Video at id not found or user has no rights to see it')
+        }
+
+        response.contentType = 'video/mp4'
+        response.setHeader('Content-disposition', "attachment;filename=${video.id}.mp4")
+        response.contentLength = video.data.length
+
+        response.outputStream << new ByteArrayInputStream(video.data)
+        response.outputStream.flush()
+
+        return null
+    }
+
+    def getPhotoAlbum = {
+        Long requestorId = Long.parseLong(params.requestor)
+        Long albumId = Long.parseLong(params.id)
+
+        ByteArrayOutputStream outputBytes = mediaService.createAlbumZip(albumId, requestorId)
+
+        if (!outputBytes) {
+            return render(status: 404, message: 'Album at id not found or user has no rights to see it')
+        }
+
+        response.setHeader("Content-disposition", "filename=\"album-${albumId}.zip\"")
+        response.contentType = "application/zip"
+        response.outputStream << outputBytes.toByteArray()
+        response.outputStream.flush()
+
+        return null
+    }
+
+
 }
