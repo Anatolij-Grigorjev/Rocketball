@@ -79,18 +79,20 @@ class UserService {
         if (updates?.name) user?.name = updates.name
         if (updates?.description) user?.description = updates.description
         if (updates?.picId) user?.picture = Picture.get(Converter.coerceToLong(updates.picId))
-        if (updates?.blocked) user?.blocked = updates?.blocked?.collect { User.get(Converter.coerceToLong(it)) }
-        if (updates?.favorites) {
-            updates.favorites.each {
-                def id = Converter.coerceToLong(it.key)
-                def shouldFriend = Boolean.parseBoolean(it.value)
-                if (shouldFriend) {
-                    user?.favorites << User.get(id)
-                } else {
-                    user?.favorites?.remove(User.get(id))
+        ['favorites', 'blocked'].each { word ->
+            if (updates?.(word)) {
+                updates.(word).each {
+                    def id = Converter.coerceToLong(it.key)
+                    def shouldStuff = Boolean.parseBoolean(it.value)
+                    if (shouldStuff) {
+                        user?.(word) << User.get(id)
+                    } else {
+                        user?.(word)?.remove(User.get(id))
+                    }
                 }
             }
         }
+
         user.save()
     }
 

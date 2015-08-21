@@ -17,7 +17,7 @@ class EmitterJob {
             int emitts = 0
             User.findAll { userFbId < 0 }.each {
                 emitts++
-                coordsEmitter(it, 54.689566, 25.272500)
+//                coordsEmitter(it, 54.689566, 25.272500)
             }
             if (emitts) {
                 log.debug("Emitted fresh coords for ${emitts} test users")

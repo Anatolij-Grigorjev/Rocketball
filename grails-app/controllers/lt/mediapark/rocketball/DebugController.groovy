@@ -62,24 +62,23 @@ class DebugController {
 
     def login = {
         int amount = Integer.parseInt(params.id)
-        def users = User.all.findAll { !userService.loggedInUsers.containsKey(it.id) }
+        def users = User.all
         def rnd = new Random()
         def result = []
         amount.times {
+            //54.689566, 25.272500
+            Double latOrigin = params.lat ? Double.parseDouble(params.lat) : 54.689566
+            Double lngOrigin = params.lng ? Double.parseDouble(params.lng) : 25.272500
+            def user
             if (users.size() > it) {
                 //login some existing users
-                result << users[it]
-                userService.loggedInUsers << [(users[it].id): new Date().time]
+                user = users[it]
             } else {
                 //need more users
-                def user = new User()
-                def latOrigin = 54.689566
-                def lngOrigin = 25.272500
-                user.currLat = latOrigin - (rnd.nextDouble() / rnd.nextInt(10000))
-                user.currLng = lngOrigin + (rnd.nextDouble() / rnd.nextInt(10000))
-
-                user.name = names[rnd.nextInt(names.size())]
-                user.description = "This describes me best ${def desc = ""; rnd.nextInt(15).times { desc += (rnd.nextDouble() + ' ') }; desc}"
+                user = new User()
+                //take random first name and random last name
+                user.name = names[rnd.nextInt(names.size())].split('\\s+')[0] + ' ' + names[rnd.nextInt(names.size())].split('\\s+')[1]
+                user.description = "This describes me best ${def desc = ""; rnd.nextInt(7).times { desc += (rnd.nextDouble() + ' ') }; desc}"
                 user.userFbId = -1 * Math.abs(rnd.nextLong())
                 File image = downloadImage('http://lorempixel.com/320/320/')
                 if (image) {
@@ -88,9 +87,11 @@ class DebugController {
                     user.picture = picture
                 }
                 user.save()
-                result << user
-                userService.loggedInUsers << [(user.id): new Date().time]
             }
+            user.currLat = latOrigin - (rnd.nextDouble() / rnd.nextInt(10000))
+            user.currLng = lngOrigin + (rnd.nextDouble() / rnd.nextInt(10000))
+            result << user
+            userService.loggedInUsers << [(user.id): new Date().time]
         }
         def json = result.collect { converterService.userToJSON(it) }
         render json as JSON
