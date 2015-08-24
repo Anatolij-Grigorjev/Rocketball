@@ -39,7 +39,6 @@ class LoginController {
     def regText = {
         def fbId = params.id
         def user = userService.tempUsers[(fbId)]
-        userService.tempUsers.remove(fbId)
         if (user) {
             log.info "Found temp user for facebook id ${fbId}"
             user.name = request.JSON.name
@@ -48,6 +47,7 @@ class LoginController {
             userService.loggedInUsers << [(user.id): new Date().time]
 
             def userMap = converterService.userToJSON(user)
+            userService.tempUsers.remove(fbId)
 
             render userMap as JSON
 

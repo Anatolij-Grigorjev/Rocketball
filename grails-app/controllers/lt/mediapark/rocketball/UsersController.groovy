@@ -54,7 +54,7 @@ class UsersController {
 
     def update = {
         def user = userService.get(Long.parseLong(params.id), false)
-        user = userService.updateUser(user, request.JSON)
+        user = userService.updateUser(user, (Map) request.JSON)
 
         def map = converterService.userToJSON(user)
 
