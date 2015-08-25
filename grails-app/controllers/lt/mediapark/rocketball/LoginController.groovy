@@ -96,7 +96,7 @@ class LoginController {
         String email = request.JSON.email
         String password = request.JSON.password
 
-        if (email && password && !User.all.email.anyParallel { it.equals(email) }) {
+        if (email && password && !User.all.email.any { it.equals(email) }) {
 
             def salt = userService.generateSalt(password?.length() > MIN_SALT_LENGTH ? password.length() : MIN_SALT_LENGTH)
             def actualPass = (password + salt).encodeAsSHA256()
