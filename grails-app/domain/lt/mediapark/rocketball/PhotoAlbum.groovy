@@ -14,4 +14,13 @@ class PhotoAlbum {
     ]
 
     Set<Picture> photos = []
+
+    public PhotoAlbum leftShift(Picture photo) {
+        if (!this.photos) {
+            this.photos = [] as Set
+        }
+        this.photos << photo
+        this
+    }
+
 }

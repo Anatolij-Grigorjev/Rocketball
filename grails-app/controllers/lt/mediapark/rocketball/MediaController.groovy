@@ -61,8 +61,8 @@ class MediaController {
     }
 
     def getPhotoAlbum = {
-        Long requestorId = Long.parseLong(params.requestor)
-        Long albumId = Long.parseLong(params.id)
+        Long requestorId = params.requestor ? Long.parseLong(params.requestor) : null
+        Long albumId = params.id ? Long.parseLong(params.id) : null
 
         ByteArrayOutputStream outputBytes = mediaService.createAlbumZip(albumId, requestorId)
 
