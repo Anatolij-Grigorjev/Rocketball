@@ -4,6 +4,7 @@ import grails.converters.JSON
 import lt.mediapark.rocketball.clsf.MessageType
 import lt.mediapark.rocketball.message.ChatMessage
 import lt.mediapark.rocketball.utils.Constants
+import lt.mediapark.rocketball.utils.Converter
 import org.springframework.web.multipart.MultipartRequest
 
 class ChatController {
@@ -81,6 +82,15 @@ class ChatController {
         ChatMessage message = chatService.sendMessage(senderId, receiverId, content, msgType)
         def map = converterService.chatMessageToJSON(message)
         render map as JSON
+    }
+
+    def list = {
+        List<ChatMessage> listMessages = chatService.getChatsList(Converter.coerceToLong(params.id))
+        def map = listMessages.collect {
+            converterService.chatMessageToJSON(it)
+        }
+        def finMap = ['messages': map]
+        render finMap as JSON
     }
 
 
