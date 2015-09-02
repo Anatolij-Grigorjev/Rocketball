@@ -62,7 +62,7 @@ class ConverterService {
         def users = reqReceives ? list : list.reverse()
         def key = reqReceives ? 'sender' : 'receiver'
 
-        ((Map) map[(key)]).putAll mapUserRelationInfo(*list)
+        ((Map) map[(key)]).putAll mapUserRelationInfo(*users)
 
         map
     }
