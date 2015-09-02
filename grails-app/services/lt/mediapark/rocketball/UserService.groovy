@@ -98,12 +98,12 @@ class UserService {
 
     def clearCoords(def userId) {
         def user = get(userId)
-        if (!user.userFbId || user.userFbId > 0)
+        if (!user.userFbId || user.userFbId > 0) {
             log.debug('Removing coords for user: ' + user.name)
-        user.currLat = null
-        user.currLng = null
-
-        user.save(flush: true)
+            user.currLat = null
+            user.currLng = null
+            user.save(flush: true)
+        }
     }
 
     def generateSalt(int length) {
