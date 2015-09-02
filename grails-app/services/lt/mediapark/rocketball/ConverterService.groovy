@@ -18,6 +18,13 @@ class ConverterService {
         if (user?.userFbId) map['fbId'] = user.userFbId
         if (user?.currLat) map['currLat'] = user.currLat
         if (user?.currLng) map['currLng'] = user.currLng
+        map.putAll mapUserRelationInfo(user, relation)
+
+        map
+    }
+
+    private Map mapUserRelationInfo(User user, User relation = null) {
+        def map = [:]
         if (relation && relation != user) {
             //returning user in relation to another, so we know if they favorite/blocked
             map['favorite'] = relation?.favorites?.id?.contains(user?.id)
@@ -31,6 +38,7 @@ class ConverterService {
             map['favorite'] = user?.favorites?.id
             map['blocked'] = user?.blocked?.id
         }
+
         map
     }
 
@@ -43,6 +51,18 @@ class ConverterService {
         if (chatMessage?.receiveDate) map['receiveDate'] = chatMessage.receiveDate
         //auto resolves to what is required at that moment
         if (chatMessage?.content) map['content'] = contentJSON(chatMessage)
+
+        map
+    }
+
+    Map chatMessageToJSON(ChatMessage chatMessage, User requestor) {
+        def map = chatMessageToJSON(chatMessage)
+        boolean reqReceives = chatMessage.receiver == requestor
+        def list = [chatMessage.sender, chatMessage.receiver]
+        def users = reqReceives ? list : list.reverse()
+        def key = reqReceives ? 'sender' : 'receiver'
+
+        ((Map) map[(key)]).putAll mapUserRelationInfo(*list)
 
         map
     }

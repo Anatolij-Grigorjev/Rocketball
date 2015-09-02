@@ -85,9 +85,10 @@ class ChatController {
     }
 
     def list = {
-        List<ChatMessage> listMessages = chatService.getChatsList(Converter.coerceToLong(params.id))
+        def user = userService.get(Converter.coerceToLong(params.id), true)
+        List<ChatMessage> listMessages = chatService.getChatsList(user)
         def map = listMessages.collect {
-            converterService.chatMessageToJSON(it)
+            converterService.chatMessageToJSON(it, user)
         }
         def finMap = ['messages': map]
         render finMap as JSON

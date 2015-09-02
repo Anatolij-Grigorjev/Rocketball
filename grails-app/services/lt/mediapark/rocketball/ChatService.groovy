@@ -64,14 +64,13 @@ class ChatService {
         videoMessage.save()
     }
 
-    def getChatsList(Long userIdNum) {
-        def user = userService.get(userIdNum, true)
+    def getChatsList(User user) {
         def messages = ChatMessage.findAllBySenderOrReceiver(user, user)
 
         messages.sort(true) { a, b -> -1 * (a.sendDate <=> b.sendDate) }
 
         def recentMap = messages.collectEntries {
-            def keyToCheck = (it?.sender?.id == userIdNum ? it?.receiver?.id : it?.sender?.id)
+            def keyToCheck = (it?.sender?.id == user?.id ? it?.receiver?.id : it?.sender?.id)
             [(keyToCheck): it]
         }
         recentMap.values().collect()
