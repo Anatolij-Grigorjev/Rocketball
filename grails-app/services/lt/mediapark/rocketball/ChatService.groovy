@@ -65,10 +65,17 @@ class ChatService {
     }
 
     def getChatsList(User user) {
-        def messages = ChatMessage.findAllBySenderOrReceiver(user, user)
+        //its important to sort in the order opposite of the one we want
+        List<ChatMessage> messages = ChatMessage.createCriteria().list {
+            or {
+                eq('sender.id', user.id)
+                eq('receiver.id', user.id)
+            }
+            order('sendDate', 'asc')
+        } as List<ChatMessage>
 
-        messages.sort(true) { a, b -> -1 * (a.sendDate <=> b.sendDate) }
-
+        //the map wll keep merging messages into each other until the last one
+        //remains, which works due to sort order
         def recentMap = messages.collectEntries {
             def keyToCheck = (it?.sender?.id == user?.id ? it?.receiver?.id : it?.sender?.id)
             [(keyToCheck): it]
