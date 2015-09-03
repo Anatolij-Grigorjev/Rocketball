@@ -40,6 +40,8 @@ class UsersController {
         Long userId = Long.parseLong(params.id)
         def list = userService."${type}List"(userId)
 
+
+
         render list as JSON
 
     }

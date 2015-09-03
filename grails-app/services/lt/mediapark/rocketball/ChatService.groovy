@@ -1,6 +1,7 @@
 package lt.mediapark.rocketball
 
 import grails.transaction.Transactional
+import groovyx.gpars.GParsPool
 import lt.mediapark.rocketball.clsf.MessageType
 import lt.mediapark.rocketball.message.ChatMessage
 import lt.mediapark.rocketball.message.PhotoMessage
@@ -75,6 +76,15 @@ class ChatService {
             }
             order('sendDate', 'asc')
         } as List<ChatMessage>
+
+        GParsPool.withPool {
+            //filter away those who blocked us
+            messages = messages.findAllParallel { ChatMessage msg ->
+                boolean isSender = msg.sender == user
+                def prop = isSender ? 'receiver' : 'sender'
+                !msg."${prop}"?.blocked?.contains(user)
+            }
+        }
 
         //the map wll keep merging messages into each other until the last one
         //remains, which works due to sort order

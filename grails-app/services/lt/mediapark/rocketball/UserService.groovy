@@ -1,6 +1,7 @@
 package lt.mediapark.rocketball
 
 import grails.transaction.Transactional
+import groovyx.gpars.GParsPool
 import lt.mediapark.rocketball.utils.Constants
 import lt.mediapark.rocketball.utils.Converter
 import lt.mediapark.rocketball.utils.DistanceCalc
@@ -46,9 +47,14 @@ class UserService {
     def favoritesList(Long userId) {
 
         def user = get(userId, false)
-        user.favorites.collect {
-            converterService.userToJSON(it, user)
+        def mapList
+        GParsPool.withPool {
+            mapList = user.favorites.findAllParallel { User fav -> !fav.blocked.contains(user)
+            }.collectParallel {
+                converterService.userToJSON(it, user)
+            }
         }
+        mapList
     }
 
     def closeList(Long userId) {
@@ -58,11 +64,16 @@ class UserService {
             not {
                 'in'('id', [userId])
             }
+        } as List<User>
+
+        def mapList
+        GParsPool.withPool {
+            def filtered = users.findAllParallel {
+                (DistanceCalc.getHavershineDistance(it, user) <= Constants.PEOPLE_RADIUS_M
+                        && !it.blocked.contains(user))
+            }
+            mapList = filtered.collectParallel { converterService.userToJSON(it, user) }
         }
-
-        def filtered = users.findAll { DistanceCalc.getHavershineDistance(it, user) <= Constants.PEOPLE_RADIUS_M }
-
-        def mapList = filtered.collect { converterService.userToJSON(it, user) }
         mapList
     }
 
