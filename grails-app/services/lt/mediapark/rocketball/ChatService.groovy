@@ -28,9 +28,11 @@ class ChatService {
                 }
             }
             le('created', before)
-            order('sendDate', 'asc')
-        }
-        historyMessages = ((List) historyMessages).take(limit)
+            order('sendDate', 'desc')
+            maxResults(limit)
+        } as List<ChatMessage>
+        //messages need to be resorted the other way becomes we were taking a limit amount of them
+        historyMessages.reverse(true)
         def receivedMessages = historyMessages.findAll { ChatMessage message -> requestor == message.receiver }
         receivedMessages.each { ChatMessage msg -> if (!msg.receiveDate) msg.receiveDate = new Date() }
         ChatMessage.saveAll(receivedMessages)
