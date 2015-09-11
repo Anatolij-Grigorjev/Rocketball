@@ -86,10 +86,10 @@ class DebugController {
                     picture = picture.save()
                     user.picture = picture
                 }
-                user.save()
             }
             user.currLat = latOrigin - (rnd.nextDouble() / rnd.nextInt(10000))
             user.currLng = lngOrigin + (rnd.nextDouble() / rnd.nextInt(10000))
+            user.save()
             result << user
             userService.loggedInUsers << [(user.id): new Date().time]
         }
