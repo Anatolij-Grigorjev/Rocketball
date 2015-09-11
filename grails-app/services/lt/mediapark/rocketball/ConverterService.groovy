@@ -15,9 +15,9 @@ class ConverterService {
 
         if (user?.description != null) map['description'] = user.description
         if (user?.email) map['email'] = user.email
-        if (user?.userFbId) map['fbId'] = user.userFbId
         if (user?.currLat) map['currLat'] = user.currLat
         if (user?.currLng) map['currLng'] = user.currLng
+        if (user?.tempPassword) map['tempPassword'] = user.tempPassword
         map.putAll mapUserRelationInfo(user, relation)
 
         map

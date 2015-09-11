@@ -11,6 +11,8 @@ import java.security.SecureRandom
 @Transactional
 class UserService {
 
+    final int MIN_SALT_LENGTH = 40
+
     def converterService
     SecureRandom secureRandom = new SecureRandom("This is a seed".bytes)
 
@@ -107,6 +109,20 @@ class UserService {
         user.save(flush: true)
     }
 
+    /**
+     * Set user password and salt to new values based on password hash or whatever it is
+     * @param user user to set password for
+     * @param password password SHA1 hash
+     * @return
+     */
+    def updateUserPassword(User user, String password, boolean isTemp = false) {
+        def salt = generateSalt(password?.length() > MIN_SALT_LENGTH ? password.length() : MIN_SALT_LENGTH)
+        def actualPass = (password + salt).encodeAsSHA256()
+        user.passwordHash = actualPass
+        user.salt = salt
+        user.tempPassword = isTemp
+    }
+
     def clearCoords(def userId) {
         def user = get(userId)
         if (!user.userFbId || user.userFbId > 0) {
@@ -123,5 +139,19 @@ class UserService {
         secureRandom.nextBytes(saltBytes)
 
         new String(saltBytes)
+    }
+
+    def generateTempPass(User user) {
+        def newPass = ''
+        //1 to 3 words
+        int wordsTotal = Constants.randomWords.length
+        (secureRandom.nextInt(3) + 1).times {
+            newPass += Constants.randomWords[secureRandom.nextInt(wordsTotal)]
+                    ."${newPass ? 'capitalize' : 'toLowerCase'}"()
+        }
+        newPass += ('' + secureRandom.nextInt(100)).padLeft(2, '0')
+        updateUserPassword(user, newPass.encodeAsSHA1(), true)
+        user.save(flush: true)
+        newPass
     }
 }

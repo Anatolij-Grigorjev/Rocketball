@@ -11,6 +11,7 @@ class User {
         email nullable: true, unique: true
         passwordHash nullable: true
         salt nullable: true
+        tempPassword nullable: false
     }
 
     static hasMany = [
@@ -27,6 +28,7 @@ class User {
     Long userFbId
     Double currLat
     Double currLng
+    Boolean tempPassword = Boolean.FALSE
 
     boolean hasLocation() {
         this.currLat && this.currLng

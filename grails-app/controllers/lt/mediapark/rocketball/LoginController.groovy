@@ -11,13 +11,13 @@ class LoginController {
             loginFB    : 'GET',
             loginNative: 'POST',
             regNative  : 'POST',
-            loginNative: 'POST'
+            loginNative: 'POST',
+            resetPwd   : 'POST'
     ]
 
     def userService
     def converterService
-
-    final int MIN_SALT_LENGTH = 40
+    def mailService
 
     def regPicture = {
         CommonsMultipartFile picture = request.getFile('photo')
@@ -77,17 +77,17 @@ class LoginController {
         if (email && password) {
             def user = User.findByEmail(email)
             if (!user) {
-                return render(403)
+                return render(status: 403)
             }
             def hash = (password + user.salt).encodeAsSHA256()
             if (hash == user.passwordHash) {
                 def map = converterService.userToJSON(user)
                 render map as JSON
             } else {
-                return render(403)
+                return render(status: 401)
             }
         } else {
-            return render(403)
+            return render(status: 400)
         }
     }
 
@@ -98,17 +98,38 @@ class LoginController {
 
         if (email && password && !User.all.email.any { it.equals(email) }) {
 
-            def salt = userService.generateSalt(password?.length() > MIN_SALT_LENGTH ? password.length() : MIN_SALT_LENGTH)
-            def actualPass = (password + salt).encodeAsSHA256()
+            User user = new User(email: email)
+            userService.updateUserPassword(user, password)
 
-            User user = new User(email: email, passwordHash: actualPass, salt: salt)
             def uuid = UUID.randomUUID().toString()
             userService.tempUsers[(uuid)] = user
             def map = [uuid: uuid]
             render map as JSON
 
         } else {
-            render 401
+            render(status: 400)
+        }
+    }
+
+    def resetPwd = {
+        String email = request.JSON.email
+        User user = User.findByEmail(email)
+        //gotta make sure its a valid email in system
+        if (email && user) {
+            try {
+                mailService.sendMail {
+                    to "${user.name}<${email}>"
+                    subject 'Rocketball password reset'
+                    body(view: "/mail/resetPasswordEmail",
+                            model: [user: user, tempPass: userService.generateTempPass(user)])
+                }
+            } catch (Exception ex) {
+                log.error("Problem sending mail: ${ex.message} to ${email} for ${user}", ex)
+                render(status: 512, "Email server down")
+            }
+            render(status: 200)
+        } else {
+            render(status: 400)
         }
     }
 

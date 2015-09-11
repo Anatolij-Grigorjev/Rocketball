@@ -59,6 +59,11 @@ class UrlMappings {
             action = 'loginFB'
         }
 
+        "/resetPassword" {
+            controller = 'login'
+            action = 'resetPwd'
+        }
+
         "/debug/login/$id?" {
             controller = 'debug'
             action = 'login'

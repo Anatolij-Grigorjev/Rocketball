@@ -10,12 +10,13 @@ class UsersController {
     static allowedMethods = [
             index : 'GET',
             list  : 'GET',
-            update: 'POST'
+            update        : 'POST',
+            updatePassword: 'POST'
     ]
 
     def index = {
 
-        def user = userService.get(Long.parseLong(params.id), true)
+        def user = userService.get(params.id, true)
         if (!user) {
             render 404
         } else {
@@ -48,15 +49,25 @@ class UsersController {
 
 
     def coords = {
-        def user = userService.get(Long.parseLong(params.id), false)
-        userService.updateCoords(user, request.JSON)
+        def user = userService.get(params.id, false)
+        userService.updateCoords(user, (Map) request.JSON)
 
         render 200
     }
 
     def update = {
-        def user = userService.get(Long.parseLong(params.id), false)
+        def user = userService.get(params.id, false)
         user = userService.updateUser(user, (Map) request.JSON)
+
+        def map = converterService.userToJSON(user)
+
+        render map as JSON
+    }
+
+    def updatePassword = {
+        def user = userService.get(params.id, false)
+        def passSha1 = request.JSON.password
+        userService.updateUserPassword(user, passSha1)
 
         def map = converterService.userToJSON(user)
 
