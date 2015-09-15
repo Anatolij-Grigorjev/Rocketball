@@ -35,7 +35,7 @@ class MediaService {
 
     Video getVideoFromMessage(Long vidId, Long userId) {
         if (vidId && userId) {
-            def vidMessage = VideoMessage.find { it.video.id == vidId }
+            def vidMessage = VideoMessage.findByVideo(Video.get(vidId))
 
             //only the privileged can access the video
             //meaning only with right id, but also only people privvy to the conversation
