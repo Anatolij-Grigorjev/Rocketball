@@ -8,6 +8,10 @@ class VideoMessage extends ChatMessage<Video> {
         video nullable: false
     }
 
+    static fetchMode = [
+            video: 'eager'
+    ]
+
     Video video
 
     @Override

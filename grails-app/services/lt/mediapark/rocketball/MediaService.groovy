@@ -51,7 +51,7 @@ class MediaService {
     ByteArrayOutputStream createAlbumZip(Long albumId, Long requestorId) {
         if (albumId && requestorId) {
 
-            def albumMessage = PhotoMessage.find { it.photoAlbum.id == albumId }
+            def albumMessage = PhotoMessage.findByPhotoAlbum(PhotoAlbum.get(albumId))
 
             //only people allowed to look at album are those who participated in conversation
             if (albumMessage.sender.id == requestorId

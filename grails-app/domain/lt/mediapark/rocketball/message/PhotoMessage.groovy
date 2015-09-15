@@ -8,6 +8,10 @@ class PhotoMessage extends ChatMessage<PhotoAlbum> {
         photoAlbum nullable: false
     }
 
+    static fetchMode = [
+            photoAlbum: 'eager'
+    ]
+
     PhotoAlbum photoAlbum
 
     @Override
