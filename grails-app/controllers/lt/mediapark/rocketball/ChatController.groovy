@@ -52,34 +52,52 @@ class ChatController {
 
         def senderId = params.requestor
         def receiverId = params.id
-        //resolve message type based on request type and files in request
-        MessageType msgType = {
-            if (request instanceof MultipartRequest) {
-                if (request.fileMap.size() > 1) {
-                    MessageType.PICTURE
+        def msgId = Converter.coerceToLong(params.msgId)
+        //method arguments list
+        def argsList = [senderId, receiverId]
+
+        if (!msgId) {
+            //resolve message type based on request type and files in request
+            MessageType msgType = {
+                if (request instanceof MultipartRequest) {
+                    if (request.fileMap.size() > 1) {
+                        MessageType.PICTURE
+                    } else {
+                        request.getFile(Constants.VIDEO_FILE_KEY) ? MessageType.VIDEO : MessageType.PICTURE
+                    }
                 } else {
-                    request.getFile(Constants.VIDEO_FILE_KEY) ? MessageType.VIDEO : MessageType.PICTURE
+                    MessageType.TEXT
                 }
-            } else {
-                MessageType.TEXT
-            }
-        }.call()
-        //resolve payload based on request contents
-        log.debug("Received message type: " + msgType.textKey)
-        def content = {
-            switch (msgType) {
-                case MessageType.TEXT:
-                    return request.JSON.text
-                case MessageType.PICTURE:
-                    return request.fileMap.values()
-                case MessageType.VIDEO:
-                    return request.fileMap[Constants.VIDEO_FILE_KEY]
-            }
-        }.call()
+            }.call()
+            //resolve payload based on request contents
+            log.debug("Received message type: " + msgType.textKey)
+            def content = {
+                switch (msgType) {
+                    case MessageType.TEXT:
+                        return request.JSON.text
+                    case MessageType.PICTURE:
+                        return request.fileMap.values()
+                    case MessageType.VIDEO:
+                        return request.fileMap[Constants.VIDEO_FILE_KEY]
+                }
+            }.call()
 
-        log.debug("Got contents: ${content}")
+            log.debug("Got contents: ${content}")
 
-        ChatMessage message = chatService.sendMessage(senderId, receiverId, content, msgType)
+            argsList << content << msgType
+        } else {
+            log.debug "Resending message with id ${msgId}"
+            ChatMessage testMsg = ChatMessage.get(msgId)
+            if (!(testMsg
+                    && testMsg.senderId == Converter.coerceToLong(senderId)
+                    && testMsg.receiverId == Converter.coerceToLong(receiverId))) {
+                return render(status: 404, text: "Message with id not found for these sender/receiver ids")
+            }
+            argsList << null << null << msgId
+        }
+        log.debug "Send mehtod args: ${argsList}"
+
+        ChatMessage message = chatService.sendMessage(*argsList)
         def map = converterService.chatMessageToJSON(message)
         render map as JSON
     }

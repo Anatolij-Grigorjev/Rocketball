@@ -33,7 +33,8 @@ class ChatService {
             maxResults(limit)
         } as List<ChatMessage>
         //messages need to be resorted the other way becomes we were taking a limit amount of them
-        historyMessages.reverse(true)
+        historyMessages.reverse(true).removeAll { it.receiver == requestor && !it.sendDate }
+
         def receivedMessages = historyMessages.findAll { ChatMessage message -> requestor == message.receiver }
         receivedMessages.each { ChatMessage msg -> if (!msg.receiveDate) msg.receiveDate = new Date() }
         ChatMessage.saveAll(receivedMessages)
@@ -41,29 +42,31 @@ class ChatService {
         historyMessages
     }
 
-    ChatMessage sendMessage(def senderId, def receiverId, def content, MessageType type) {
+    ChatMessage sendMessage(def senderId, def receiverId, def content, MessageType type, Long msgId = null) {
         def sender = userService.get(senderId)
         def receiver = userService.get(receiverId, true)
-
-        return "send${WordUtils.capitalizeFully(type.textKey)}Message"(sender, receiver, content)
+        ChatMessage message = msgId ?
+                ChatMessage.get(msgId)
+                :
+                "prep${WordUtils.capitalizeFully(type.textKey)}Message"(sender, receiver, content)
+        message.sendDate = sender.isBlockedBy(receiver) ? null : new Date()
+        message.save()
     }
 
-    private TextMessage sendTextMessage(User sender, User receiver, String text) {
-        TextMessage textMessage = new TextMessage(sender: sender, receiver: receiver, text: text, sendDate: new Date())
+    private TextMessage prepTextMessage(User sender, User receiver, String text) {
+        TextMessage textMessage = new TextMessage(sender: sender, receiver: receiver, text: text)
         textMessage.save()
     }
 
-    private PhotoMessage sendPictureMessage(User sender, User receiver, Collection<CommonsMultipartFile> photos) {
+    private PhotoMessage prepPictureMessage(User sender, User receiver, Collection<CommonsMultipartFile> photos) {
         PhotoAlbum album = mediaService.saveAsAlbum(photos)
         PhotoMessage photoMessage = new PhotoMessage(sender: sender, receiver: receiver, photoAlbum: album)
-        photoMessage.sendDate = new Date()
         photoMessage.save()
     }
 
-    private VideoMessage sendVideoMessage(User sender, User receiver, CommonsMultipartFile video) {
+    private VideoMessage prepVideoMessage(User sender, User receiver, CommonsMultipartFile video) {
         Video vidFile = mediaService.saveAsVideo(video)
         VideoMessage videoMessage = new VideoMessage(sender: sender, receiver: receiver, video: vidFile)
-        videoMessage.sendDate = new Date()
         videoMessage.save()
     }
 
@@ -92,6 +95,7 @@ class ChatService {
             def keyToCheck = (it?.sender?.id == user?.id ? it?.receiver?.id : it?.sender?.id)
             [(keyToCheck): it]
         }
-        recentMap.values().collect()
+
+        recentMap.values().collect().sort { ChatMessage a, ChatMessage b -> b.sendDate <=> a.sendDate }
     }
 }

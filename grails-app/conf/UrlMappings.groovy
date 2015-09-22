@@ -1,3 +1,5 @@
+import grails.util.Environment
+
 class UrlMappings {
 
     static mappings = {
@@ -64,9 +66,11 @@ class UrlMappings {
             action = 'resetPwd'
         }
 
-        "/debug/login/$id?" {
-            controller = 'debug'
-            action = 'login'
+        if (Environment.current != Environment.PRODUCTION) {
+            "/debug/login/$id?" {
+                controller = 'debug'
+                action = 'login'
+            }
         }
 
         "/users/list/$type/$id" {

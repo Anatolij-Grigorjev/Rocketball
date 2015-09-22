@@ -54,4 +54,8 @@ class User {
         result = 31 * result + (id != null ? id.hashCode() : 0)
         return result
     }
+
+    boolean isBlockedBy(User other) {
+        return other?.blocked?.contains(this)
+    }
 }
