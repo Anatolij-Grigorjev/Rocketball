@@ -115,7 +115,17 @@ class UserService {
      * @param password password SHA1 hash
      * @return
      */
-    def updateUserPassword(User user, String password, boolean isTemp = false) {
+    def updateUserPassword(User user, String oldPassword, String password, boolean isTemp = false) {
+        def actualOldPass = (oldPassword + user.salt).encodeAsSHA256()
+        if (actualOldPass == user.passwordHash) {
+            updateUserPassword(user, password, isTemp)
+            true
+        } else {
+            false
+        }
+    }
+
+    def updateUserPassword(User user, String password, boolean isTemp) {
         def salt = generateSalt(password?.length() > MIN_SALT_LENGTH ? password.length() : MIN_SALT_LENGTH)
         def actualPass = (password + salt).encodeAsSHA256()
         user.passwordHash = actualPass

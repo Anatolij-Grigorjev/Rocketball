@@ -67,11 +67,16 @@ class UsersController {
     def updatePassword = {
         def user = userService.get(params.id, false)
         def passSha1 = request.JSON.password
-        userService.updateUserPassword(user, passSha1)
+        def oldPassSha1 = request.JSON.oldPassword
+        boolean changed = userService.updateUserPassword(user, oldPassSha1, passSha1, false)
+        if (changed) {
+            user.save(flush: true)
+            def map = converterService.userToJSON(user)
 
-        def map = converterService.userToJSON(user)
-
-        render map as JSON
+            return render(map) as JSON
+        } else {
+            return render(status: 403, text: "Old password incorrect!")
+        }
     }
 
 }
