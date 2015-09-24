@@ -99,7 +99,7 @@ class LoginController {
         if (email && password && !User.all.email.any { it.equals(email) }) {
 
             User user = new User(email: email)
-            userService.updateUserPassword(user, password)
+            userService.updateUserPassword(user, password, false)
 
             def uuid = UUID.randomUUID().toString()
             userService.tempUsers[(uuid)] = user
@@ -128,7 +128,7 @@ class LoginController {
                 log.error("Problem sending mail: ${ex.message} to ${email} for ${user}", ex)
                 render(status: 512, "Email server down")
             }
-            render(status: 200)
+            render(status: 204)
         } else {
             render(status: 400)
         }

@@ -3,7 +3,7 @@ package lt.mediapark.rocketball
 class BasicFilters {
 
     def filters = {
-        printRequest(controller: '*', action: '*') {
+        printStuff(controller: '*', action: '*') {
             before = {
                 log.debug("REQUEST:")
                 log.debug("------------------------------------------------------------")
@@ -12,6 +12,12 @@ class BasicFilters {
                 if (request.JSON) {
                     log.debug("JSON: ${request.JSON}")
                 }
+            }
+            after = {
+                log.debug("RESPONSE:")
+                log.debug("------------------------------------------------------------")
+                log.debug("Status code: ${response.status}")
+                log.debug("HEADERS: ${response.getHeaderNames().collect { it + "=" + response.getHeader(it) }}")
             }
         }
     }
