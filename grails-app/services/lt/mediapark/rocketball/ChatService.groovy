@@ -80,12 +80,16 @@ class ChatService {
             order('sendDate', 'asc')
         } as List<ChatMessage>
 
-        GParsPool.withPool {
+        GParsPool.withPool(4) {
             //filter away those who blocked us
             messages = messages.findAllParallel { ChatMessage msg ->
                 boolean isSender = msg.sender == user
                 def prop = isSender ? 'receiver' : 'sender'
-                !msg."${prop}"?.blocked?.contains(user)
+                boolean pass = false
+                ChatMessage.withNewSession {
+                    pass = !msg."${prop}"?.blocked?.contains(user)
+                }
+                pass
             }
         }
 
