@@ -10,6 +10,7 @@ class UsersController {
     static allowedMethods = [
             index : 'GET',
             list  : 'GET',
+            logout: 'GET',
             update        : 'POST',
             updatePassword: 'POST'
     ]
@@ -76,6 +77,16 @@ class UsersController {
             return render(map) as JSON
         } else {
             return render(status: 403, text: "Old password incorrect!")
+        }
+    }
+
+    def logout = {
+        def user = userService.get(params.id, false)
+        if (user) {
+            userService.loggedInUsers.remove(user.id)
+            return render(status: 200)
+        } else {
+            return render(status: 400, text: "User not logged in or non-existant!")
         }
     }
 
