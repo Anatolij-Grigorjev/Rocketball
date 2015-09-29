@@ -1,6 +1,7 @@
 package lt.mediapark.rocketball
 
 import grails.converters.JSON
+import grails.util.Environment
 
 class DebugController {
 
@@ -61,40 +62,54 @@ class DebugController {
     def converterService
 
     def login = {
-        int amount = Integer.parseInt(params.id)
-        def users = User.all
-        def rnd = new Random()
-        def result = []
-        amount.times {
-            //54.689566, 25.272500
-            Double latOrigin = params.lat ? Double.parseDouble(params.lat) : 54.689566
-            Double lngOrigin = params.lng ? Double.parseDouble(params.lng) : 25.272500
-            def user
-            if (users.size() > it) {
-                //login some existing users
-                user = users[it]
-            } else {
-                //need more users
-                user = new User()
-                //take random first name and random last name
-                user.name = names[rnd.nextInt(names.size())].split('\\s+')[0] + ' ' + names[rnd.nextInt(names.size())].split('\\s+')[1]
-                user.description = "This describes me best ${def desc = ""; rnd.nextInt(7).times { desc += (rnd.nextDouble() + ' ') }; desc}"
-                user.userFbId = -1 * Math.abs(rnd.nextLong())
-                File image = downloadImage('http://lorempixel.com/320/320/')
-                if (image) {
-                    Picture picture = new Picture(data: image.bytes, name: image.name)
-                    picture = picture.save()
-                    user.picture = picture
+        if (Environment.DEVELOPMENT.equals(Environment.current)) {
+            int amount = Integer.parseInt(params.id)
+            def users = User.all
+            def rnd = new Random()
+            def result = []
+            if (Environment.PRODUCTION.equals(Environment.current)) amount = 0
+            amount.times {
+                //54.689566, 25.272500
+                Double latOrigin = params.lat ? Double.parseDouble(params.lat) : 54.689566
+                Double lngOrigin = params.lng ? Double.parseDouble(params.lng) : 25.272500
+                def user
+                if (users.size() > it) {
+                    //login some existing users
+                    user = users[it]
+                } else {
+                    //need more users
+                    user = new User()
+                    //take random first name and random last name
+                    user.name = names[rnd.nextInt(names.size())].split('\\s+')[0] + ' ' + names[rnd.nextInt(names.size())].split('\\s+')[1]
+                    user.description = "This describes me best ${def desc = ""; rnd.nextInt(7).times { desc += (rnd.nextDouble() + ' ') }; desc}"
+                    user.userFbId = -1 * Math.abs(rnd.nextLong())
+                    File image = downloadImage('http://lorempixel.com/320/320/')
+                    if (image) {
+                        Picture picture = new Picture(data: image.bytes, name: image.name)
+                        picture = picture.save()
+                        user.picture = picture
+                    }
                 }
+                user.currLat = latOrigin - (rnd.nextDouble() / rnd.nextInt(10000))
+                user.currLng = lngOrigin + (rnd.nextDouble() / rnd.nextInt(10000))
+                user.save()
+                result << user
+                userService.loggedInUsers << [(user.id): new Date().time]
             }
-            user.currLat = latOrigin - (rnd.nextDouble() / rnd.nextInt(10000))
-            user.currLng = lngOrigin + (rnd.nextDouble() / rnd.nextInt(10000))
-            user.save()
-            result << user
-            userService.loggedInUsers << [(user.id): new Date().time]
+            def json = result.collect { converterService.userToJSON(it) }
+            render json as JSON
+        } else {
+            render(status: 200)
         }
-        def json = result.collect { converterService.userToJSON(it) }
-        render json as JSON
+    }
+
+    def remove = {
+        //test users all have this feature
+        def debugUsers = User.findAllByUserFbIdIsNotNullAndUserFbIdLessThan(0L)
+        def amount = User.where {
+            'in'('id', debugUsers.id)
+        }.deleteAll()
+        render(status: 200, text: "Deleted ${amount} users.")
     }
 
 

@@ -50,11 +50,12 @@ class UserService {
 
         def user = get(userId, false)
         def mapList
+        List<User> userFavsList = []
         GParsPool.withPool {
-            def userFavsList = user.favorites.findAllParallel { User fav -> !fav.blocked.contains(user) } as List<User>
-            mapList = userFavsList.collectParallel { converterService.userToJSON(it, user) } as List<Map>
-            mapList.sort(true) { a, b -> a.distance <=> b.distance }
+            userFavsList = user.favorites.findAllParallel { User fav -> !fav.blocked.contains(user) } as List<User>
         }
+        mapList = userFavsList.collect { converterService.userToJSON(it, user) } as List<Map>
+        mapList.sort(true) { a, b -> a.distance <=> b.distance }
         mapList
     }
 
@@ -68,14 +69,15 @@ class UserService {
         } as List<User>
 
         def mapList
+        List<User> filtered = []
         GParsPool.withPool {
-            def filtered = users.findAllParallel {
+            filtered = users.findAllParallel {
                 (DistanceCalc.getHavershineDistance(it, user) <= Constants.PEOPLE_RADIUS_M
                         && !it.blocked.contains(user))
             }
-            mapList = filtered.collectParallel { converterService.userToJSON(it, user) } as List<Map>
-            mapList.sort(true) { a, b -> a.distance <=> b.distance }
         }
+        mapList = filtered?.collect { converterService.userToJSON(it, user) } as List<Map>
+        mapList.sort(true) { a, b -> a.distance <=> b.distance }
         mapList
     }
 

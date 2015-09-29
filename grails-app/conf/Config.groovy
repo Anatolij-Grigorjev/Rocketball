@@ -104,7 +104,7 @@ environments {
     }
 }
 
-grails.rocketball.radius = 1500 // radius in meters
+grails.rocketball.radius = 1000 // radius in meters
 
 environments {
     development {
