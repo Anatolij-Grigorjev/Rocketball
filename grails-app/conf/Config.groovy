@@ -132,7 +132,7 @@ log4j.main = {
                     'grails.app'                    //bootstrap
         }
         production {
-            warn 'grails.app.controllers',        // controllers
+            info 'grails.app.controllers',        // controllers
                     'grails.app.services',          //services
                     'grails.app.filters',           //filters
                     'grails.app'
