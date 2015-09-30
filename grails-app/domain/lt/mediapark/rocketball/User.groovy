@@ -12,6 +12,7 @@ class User {
         passwordHash nullable: true
         salt nullable: true
         tempPassword nullable: false
+        deviceToken unique: true
     }
 
     static hasMany = [
@@ -28,6 +29,7 @@ class User {
     Long userFbId
     Double currLat
     Double currLng
+    String deviceToken
     Boolean tempPassword = Boolean.FALSE
 
     boolean hasLocation() {

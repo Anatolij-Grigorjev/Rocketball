@@ -89,9 +89,19 @@ grails.gorm.default.constraints = {
     '*'(nullable: true)
 }
 
+//APNS config for dev pushing with prod fallback
+grails.apns.dev.p12.path = '/opt/tomcat-rocketball-test/cert/rocketball_dev.p12'
+grails.apns.dev.p12.password = ''
+grails.apns.dev.manager.name = 'DEV-PUSHY-MANAGER'
+grails.apns.dev.environment = 'RocketBall2015'
+grails.apns.prod.p12.path = '/opt/tomcat-rocketball-test/cert/rokcetball_prod.p12'
+grails.apns.prod.p12.password = 'RocketBall2015'
+grails.apns.prod.manager.name = 'PROD-PUSHY-MANAGER'
+grails.apns.prod.environment = 'production'
+
 // turn off silent GORM errors
 grails.gorm.failOnError = true
-
+//quartz config locations
 grails.config.locations = ["file:Quartz-config.groovy"]
 
 environments {

@@ -43,6 +43,7 @@ class LoginController {
             log.info "Found temp user for facebook id ${fbId}"
             user.name = request.JSON.name
             user.description = request.JSON.description
+            user.deviceToken = request.JSON.deviceToken
             user = userService.finalizeUser(user)
             userService.loggedInUsers << [(user.id): new Date().time]
 

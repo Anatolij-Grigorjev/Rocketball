@@ -23,4 +23,8 @@ class PhotoAlbum {
         this
     }
 
+    public int size() {
+        return photos ? photos.size() : 0
+    }
+
 }

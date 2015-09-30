@@ -1,5 +1,6 @@
 package lt.mediapark.rocketball
 
+import com.relayrides.pushy.apns.util.ApnsPayloadBuilder
 import grails.transaction.Transactional
 import groovyx.gpars.GParsPool
 import lt.mediapark.rocketball.clsf.MessageType
@@ -15,6 +16,8 @@ class ChatService {
 
     def userService
     def mediaService
+
+    public static final Integer MAX_MESSAGE_CHARS = 50
 
     List<ChatMessage> getChatHistory(User requestor, User other, Date before, int limit) {
         def historyMessages = ChatMessage.createCriteria().list {
@@ -51,6 +54,41 @@ class ChatService {
                 "prep${WordUtils.capitalizeFully(type.textKey)}Message"(sender, receiver, content)
         message.sendDate = sender.isBlockedBy(receiver) ? null : new Date()
         message.save()
+        if (receiver.deviceToken && this.apnsManager) {
+            sendNotification(receiver.deviceToken) { ApnsPayloadBuilder builder ->
+                String messageText = { ChatMessage msg ->
+                    String senderName = msg.sender.name
+                    if (msg instanceof TextMessage) {
+                        return (senderName + ': ' + shortened(msg.text))
+                    }
+                    if (msg instanceof VideoMessage) {
+                        return (senderName + ' has sent you a video')
+                    }
+                    if (msg instanceof PhotoMessage) {
+                        int size = content.size() //content is a collection
+                        return (senderName + " has sent you ${size} photo(-s)")
+                    }
+                }.call(message)
+                //total message cannot exceed 250 bytes
+                builder.with {
+                    alertBody = messageText
+                    addCustomProperty('senderId', sender.id) //8 + 8 bytes
+                    addCustomProperty('senderName', sender.name) //10 + ~15 bytes
+                    addCustomProperty('senderPicId', sender.pictureId) //11 + 8 bytes
+                }
+            }
+        }
+        message
+    }
+
+    private String shortened(String text) {
+        if (!text) {
+            return ''
+        }
+        if (text.length() <= MAX_MESSAGE_CHARS) {
+            return text
+        }
+        (text.substring(0, MAX_MESSAGE_CHARS) + '...')
     }
 
     private TextMessage prepTextMessage(User sender, User receiver, String text) {
