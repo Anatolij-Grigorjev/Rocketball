@@ -29,6 +29,9 @@ class ChatController {
 
             def user1 = userService.get(params.id1, !requestorIs1)
             def user2 = userService.get(params.id2, requestorIs1)
+            if (!user1 || !user2) {
+                return render(status: 404, text: "One or both users not found at ids ${params.id1} and ${params.id2}")
+            }
             Date time = params.time ? new Date(Converter.coerceToLong(params.time)) : new Date()
             Integer limit = Integer.parseInt(params.msgLmt ?: "50")
 
@@ -104,6 +107,9 @@ class ChatController {
 
     def list = {
         def user = userService.get(Converter.coerceToLong(params.id), true)
+        if (!user) {
+            return render(status: 404, text: "User at id ${params.id} not found")
+        }
         List<ChatMessage> listMessages = chatService.getChatsList(user)
         def map = listMessages.collect {
             converterService.chatMessageToJSON(it, user)

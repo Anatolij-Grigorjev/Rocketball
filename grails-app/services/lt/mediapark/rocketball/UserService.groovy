@@ -49,6 +49,9 @@ class UserService {
     def favoritesList(Long userId) {
 
         def user = get(userId, false)
+        if (!user) {
+            return null
+        }
         def mapList
         List<User> userFavsList = []
         GParsPool.withPool {
@@ -62,6 +65,9 @@ class UserService {
     def closeList(Long userId) {
 
         def user = get(userId, false)
+        if (!user) {
+            return null
+        }
         List<User> users = User.createCriteria().list {
             not {
                 'in'('id', [userId])

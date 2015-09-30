@@ -19,7 +19,7 @@ class UsersController {
 
         def user = userService.get(params.id, true)
         if (!user) {
-            render 404
+            render(status: 404, text: "User at id ${params.id} doesn`t exist.")
         } else {
             def requestorUser = null
             if (params.requestor) {
@@ -41,8 +41,9 @@ class UsersController {
         String type = params.type
         Long userId = Long.parseLong(params.id)
         def list = userService."${type}List"(userId)
-
-
+        if (list == null) {
+            return render(status: 404, text: "User at id ${params.id} doesn`t exist.")
+        }
 
         render list as JSON
 
@@ -51,6 +52,9 @@ class UsersController {
 
     def coords = {
         def user = userService.get(params.id, false)
+        if (!user) {
+            return render(status: 404, text: "User at id ${params.id} doesn`t exist.")
+        }
         userService.updateCoords(user, (Map) request.JSON)
 
         render 200
@@ -58,6 +62,9 @@ class UsersController {
 
     def update = {
         def user = userService.get(params.id, false)
+        if (!user) {
+            return render(status: 404, text: "User at id ${params.id} doesn`t exist.")
+        }
         user = userService.updateUser(user, (Map) request.JSON)
 
         def map = converterService.userToJSON(user)
@@ -67,6 +74,9 @@ class UsersController {
 
     def updatePassword = {
         def user = userService.get(params.id, false)
+        if (!user) {
+            return render(status: 404, text: "User at id ${params.id} doesn`t exist.")
+        }
         def passSha1 = request.JSON.password
         def oldPassSha1 = request.JSON.oldPassword
         boolean changed = userService.updateUserPassword(user, oldPassSha1, passSha1, false)
