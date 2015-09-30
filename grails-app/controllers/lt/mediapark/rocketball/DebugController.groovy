@@ -1,7 +1,6 @@
 package lt.mediapark.rocketball
 
 import grails.converters.JSON
-import grails.util.Environment
 
 class DebugController {
 
@@ -62,12 +61,12 @@ class DebugController {
     def converterService
 
     def login = {
-        if (Environment.DEVELOPMENT.equals(Environment.current)) {
-            int amount = Integer.parseInt(params.id)
+//        if (Environment.DEVELOPMENT.equals(Environment.current)) {
+        int amount = Integer.parseInt(params.id)
             def users = User.all
             def rnd = new Random()
             def result = []
-            if (Environment.PRODUCTION.equals(Environment.current)) amount = 0
+//            if (Environment.PRODUCTION.equals(Environment.current)) amount = 0
             amount.times {
                 //54.689566, 25.272500
                 Double latOrigin = params.lat ? Double.parseDouble(params.lat) : 54.689566
@@ -98,10 +97,11 @@ class DebugController {
             }
             def json = result.collect { converterService.userToJSON(it) }
             render json as JSON
-        } else {
-            render(status: 200)
         }
-    }
+//        else {
+//            render(status: 200)
+//        }
+//    }
 
     def remove = {
         //test users all have this feature
