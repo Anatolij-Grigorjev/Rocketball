@@ -1,5 +1,6 @@
 package lt.mediapark.rocketball
 
+import com.google.android.gcm.server.Message
 import com.relayrides.pushy.apns.util.ApnsPayloadBuilder
 import grails.transaction.Transactional
 import groovyx.gpars.GParsPool
@@ -11,6 +12,8 @@ import lt.mediapark.rocketball.message.VideoMessage
 import org.apache.commons.lang.WordUtils
 import org.springframework.web.multipart.commons.CommonsMultipartFile
 
+import java.util.concurrent.atomic.AtomicLong
+
 @Transactional
 class ChatService {
 
@@ -18,6 +21,7 @@ class ChatService {
     def mediaService
 
     public static final Integer MAX_MESSAGE_CHARS = 50
+    private static AtomicLong androidMsgCollapseId = new AtomicLong(477);
 
     List<ChatMessage> getChatHistory(User requestor, User other, Date before, int limit) {
         def historyMessages = ChatMessage.createCriteria().list {
@@ -54,30 +58,50 @@ class ChatService {
                 "prep${WordUtils.capitalizeFully(type.textKey)}Message"(sender, receiver, content)
         message.sendDate = sender.isBlockedBy(receiver) ? null : new Date()
         message.save()
-        if (receiver.deviceToken && this.apnsManager) {
-            sendNotification(receiver.deviceToken) { ApnsPayloadBuilder builder ->
-                String messageText = { ChatMessage msg ->
-                    String senderName = msg.sender.name
-                    if (msg instanceof TextMessage) {
-                        return (senderName + ': ' + shortened(msg.text))
+        boolean iOSPush = receiver.deviceToken && this.apnsManager
+        boolean androidPush = receiver.registrationId && this.gcmSender
+        if (iOSPush || androidPush) {
+            String messageText = { ChatMessage msg ->
+                String senderName = msg.sender.name
+                if (msg instanceof TextMessage) {
+                    return (senderName + ': ' + shortened(msg.text))
+                }
+                if (msg instanceof VideoMessage) {
+                    return (senderName + ' has sent you a video')
+                }
+                if (msg instanceof PhotoMessage) {
+                    int size = content.size() //content is a collection
+                    return (senderName + " has sent you ${size} photo(-s)")
+                }
+            }.call(message)
+            if (iOSPush) {
+                sendAPNSNotification(receiver.deviceToken) { ApnsPayloadBuilder builder ->
+
+                    //total message cannot exceed 250 bytes
+                    builder.with {
+                        alertBody = messageText
+                        addCustomProperty('senderId', sender.id) //8 + 8 bytes
+                        addCustomProperty('senderName', sender.name) //10 + ~15 bytes
+                        addCustomProperty('senderPicId', sender.pictureId) //11 + 8 bytes
                     }
-                    if (msg instanceof VideoMessage) {
-                        return (senderName + ' has sent you a video')
+                }
+            }
+            if (androidPush) {
+                sendGCMNotification(receiver.registrationId) { Message.Builder builder ->
+                    builder.with {
+                        collapseKey(sender.name + '-' + androidMsgCollapseId.andIncrement)
+                        timeToLive(60)
+                        delayWhileIdle(true)
+                        data = ['text'         : messageText
+                                , 'senderId'   : sender.id?.toString()
+                                , 'senderName' : sender.name
+                                , 'senderPicId': sender.pictureId?.toString()] as Map<String, String>
                     }
-                    if (msg instanceof PhotoMessage) {
-                        int size = content.size() //content is a collection
-                        return (senderName + " has sent you ${size} photo(-s)")
-                    }
-                }.call(message)
-                //total message cannot exceed 250 bytes
-                builder.with {
-                    alertBody = messageText
-                    addCustomProperty('senderId', sender.id) //8 + 8 bytes
-                    addCustomProperty('senderName', sender.name) //10 + ~15 bytes
-                    addCustomProperty('senderPicId', sender.pictureId) //11 + 8 bytes
                 }
             }
         }
+
+
         message
     }
 

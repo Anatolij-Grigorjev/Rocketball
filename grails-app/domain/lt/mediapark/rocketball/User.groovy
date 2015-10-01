@@ -13,6 +13,7 @@ class User {
         salt nullable: true
         tempPassword nullable: false
         deviceToken unique: true
+        registrationId unique: true
     }
 
     static hasMany = [
@@ -30,6 +31,7 @@ class User {
     Double currLat
     Double currLng
     String deviceToken
+    String registrationId
     Boolean tempPassword = Boolean.FALSE
 
     boolean hasLocation() {

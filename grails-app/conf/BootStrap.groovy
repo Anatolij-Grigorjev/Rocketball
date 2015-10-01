@@ -1,3 +1,5 @@
+import com.google.android.gcm.server.Message
+import com.google.android.gcm.server.Sender
 import com.relayrides.pushy.apns.ApnsEnvironment
 import com.relayrides.pushy.apns.ApnsPushNotification
 import com.relayrides.pushy.apns.PushManager
@@ -22,6 +24,8 @@ class BootStrap {
     PushManager pushManagerDev
     PushManager pushManagerProd
 
+    Sender gcmSender
+
     def init = { servletContext ->
 
         Constants.init(grailsApplication.config.grails)
@@ -43,6 +47,8 @@ class BootStrap {
         }
 
         grails = grailsApplication.config.grails
+
+        //APNS
         pushManagerDev = buildPushy(grails, 'dev')
         pushManagerProd = buildPushy(grails, 'prod')
         pushManagerDev?.metaClass?.otherManager = pushManagerProd
@@ -57,6 +63,10 @@ class BootStrap {
             log.debug("Push manager ${pushManagerDev?.name} initialized!")
         }
         grailsApplication.allArtefacts.each { klass -> addApnsMethods(klass) }
+
+        //GCM
+        gcmSender = new Sender(grails.gcm.browser.key)
+        grailsApplication.allArtefacts.each { klass -> addGCMMethods(klass) }
     }
 
     private PushManager buildPushy(ConfigObject grails, String env) {
@@ -80,6 +90,21 @@ class BootStrap {
         }
     }
 
+    def addGCMMethods(Class klass) {
+        klass.metaClass.static.gcmSender = gcmSender
+        klass.metaClass.static.sendGCMNotification = { String regId, Closure builder ->
+            log.debug("Sending to regId ${regId}")
+
+            Message.Builder msgBuild = new Message.Builder()
+            builder(msgBuild)
+            def message = msgBuild.build()
+            log.debug("Built message: ${message}")
+
+            def result = gcmSender.sendNoRetry(message, regId)
+            log.debug("Send result: ${result}")
+        }
+    }
+
     def addApnsMethods(def klass) {
         klass.metaClass.static.apnsManager = pushManagerDev;
         klass.metaClass.static.viaApns = { Closure actions ->
@@ -88,7 +113,7 @@ class BootStrap {
             log.debug('Done with via APNS')
         }
 
-        klass.metaClass.static.sendNotification = { token, builder ->
+        klass.metaClass.static.sendAPNSNotification = { token, builder ->
             log.debug("Transalting token ${token} to bytes")
             def tokenBytes = TokenUtil.tokenStringToByteArray(token)
 
@@ -111,7 +136,7 @@ class BootStrap {
         //classes with device token saved in them can curry the apns closure
         if (klass.metaClass.hasProperty('deviceToken')) {
             klass.metaClass.registerDeviceToken = { token ->
-                klass.metaClass.pushNotification = sendNotification.curry(token)
+                klass.metaClass.pushNotification = sendAPNSNotification.curry(token)
             }
         }
     }

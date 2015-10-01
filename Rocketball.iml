@@ -97,6 +97,7 @@
           <root url="jar://$MAVEN_REPOSITORY$/com/googlecode/json-simple/json-simple/1.1.1/json-simple-1.1.1.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/io/netty/netty-all/4.0.26.Final/netty-all-4.0.26.Final.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/com/relayrides/pushy/0.4.3/pushy-0.4.3.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/com/ganyo/gcm-server/1.0.2/gcm-server-1.0.2.jar!/" />
         </CLASSES>
         <JAVADOC>
           <root url="jar://$MAVEN_REPOSITORY$/org/jboss/logging/jboss-logging-annotations/1.2.0.Beta1/jboss-logging-annotations-1.2.0.Beta1-javadoc.jar!/" />
@@ -123,6 +124,7 @@
           <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-orm/4.0.9.RELEASE/spring-orm-4.0.9.RELEASE-sources.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/hibernate/common/hibernate-commons-annotations/4.0.4.Final/hibernate-commons-annotations-4.0.4.Final-sources.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/javax/activation/activation/1.1/activation-1.1-sources.jar!/" />
+          <root url="jar://$USER_HOME$/.ideaLibSources/gcm-server-1.0.2-sources.jar!/" />
         </SOURCES>
         <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
       </library>

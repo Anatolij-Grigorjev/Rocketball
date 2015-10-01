@@ -109,6 +109,10 @@ grails.apns.prod.p12.password = 'RocketBall2015'
 grails.apns.prod.manager.name = 'PROD-PUSHY-MANAGER'
 grails.apns.prod.environment = 'production'
 
+//GCM config for pushing to android devices
+
+grails.gcm.browser.key = 'AIzaSyChuyZMLIIl'
+
 // turn off silent GORM errors
 grails.gorm.failOnError = true
 //quartz config locations
