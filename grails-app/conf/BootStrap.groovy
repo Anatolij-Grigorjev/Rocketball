@@ -1,7 +1,5 @@
 import com.google.android.gcm.server.Message
 import com.google.android.gcm.server.Sender
-import com.notnoop.apns.APNS
-import com.notnoop.apns.ApnsService
 import com.relayrides.pushy.apns.ApnsEnvironment
 import com.relayrides.pushy.apns.ApnsPushNotification
 import com.relayrides.pushy.apns.PushManager
@@ -28,8 +26,6 @@ class BootStrap {
 
     PushManager pushManagerDev
     PushManager pushManagerProd
-
-    ApnsService apnsService
 
     Sender gcmSender
 
@@ -70,11 +66,6 @@ class BootStrap {
         }
         grailsApplication.allArtefacts.each { klass -> addApnsMethods(klass) }
 
-//        apnsService = APNS.newService()
-//                .withCert((String) grails.apns.dev.p12.path,
-//                (String) grails.apns.dev.p12.password)
-//                .withSandboxDestination()
-//                .build()
 
         //GCM
         gcmSender = new Sender(grails.gcm.browser.key)
@@ -136,13 +127,6 @@ class BootStrap {
             log.debug('Done with via APNS')
         }
 
-        klass.metaClass.static.sendAPNSAlt = { String token, String text ->
-            log.debug "Sending via alt APNS to ${token}"
-            String payload = APNS.newPayload().alertBody(text).build()
-            apnsService.push(payload.bytes, TokenUtil.tokenStringToByteArray(token))
-            log.debug "Pushed alt!"
-        }
-
         klass.metaClass.static.sendAPNSNotification = { token, builder ->
             log.debug("Transalting token ${token} to bytes")
             def tokenBytes = TokenUtil.tokenStringToByteArray(token)
@@ -157,9 +141,9 @@ class BootStrap {
 
             viaApns { apns ->
                 def q = apns.getQueue()
-                log.debug("Got Q: ${q}\n(total: ${q.size()})")
+                log.info("Got Q: ${q}\n(total: ${q.size()})")
                 q.put(new SimpleApnsPushNotification(tokenBytes, payload))
-                log.debug('Message put in q!')
+                log.info('Message put in q!')
             }
 
             log.trace('Done sending notification')

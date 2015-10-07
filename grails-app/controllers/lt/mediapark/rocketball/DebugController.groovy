@@ -3,6 +3,7 @@ package lt.mediapark.rocketball
 import com.google.android.gcm.server.Message
 import com.relayrides.pushy.apns.util.ApnsPayloadBuilder
 import grails.converters.JSON
+import lt.mediapark.rocketball.message.ChatMessage
 
 class DebugController {
 
@@ -108,10 +109,16 @@ class DebugController {
     def remove = {
         //test users all have this feature
         def debugUsers = User.findAllByUserFbIdIsNotNullAndUserFbIdLessThan(0L)
-        def amount = User.where {
-            'in'('id', debugUsers.id)
-        }.deleteAll()
-        render(status: 200, text: "Deleted ${amount} users.")
+        debugUsers.each { user ->
+            ChatMessage.executeUpdate("delete ChatMessage cm where cm.sender = :user OR cm.receiver = :user", [user: user])
+            User.all.each { innerUser ->
+                innerUser.blocked.remove(user)
+                innerUser.favorites.remove(user)
+            }
+            User.saveAll(User.all)
+        }
+        debugUsers.each { it.delete(flush: true) }
+        render(status: 200, text: "Deleted ${debugUsers.size()} users.")
     }
 
     def push = {

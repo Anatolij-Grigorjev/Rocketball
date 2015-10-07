@@ -58,8 +58,8 @@ class ChatService {
         message.sendDate = sender.isBlockedBy(receiver) ? null : new Date()
         message.save()
         try {
-            boolean iOSPush = receiver.deviceToken
-            boolean androidPush = receiver.registrationId
+            boolean iOSPush = receiver.deviceToken?.trim()
+            boolean androidPush = receiver.registrationId?.trim()
             if (iOSPush || androidPush) {
                 String messageText = { ChatMessage msg ->
                     String senderName = msg.sender.name
@@ -83,27 +83,35 @@ class ChatService {
                     } catch (Exception e) {
                         log.error "Error upon badging ${e.message}"
                     }
-                    sendAPNSNotification(receiver.deviceToken) { ApnsPayloadBuilder builder ->
+                    try {
+                        sendAPNSNotification(receiver.deviceToken) { ApnsPayloadBuilder builder ->
 
-                        //total message cannot exceed 250 bytes
-                        builder.with {
-                            alertBody = sender.name + ': ' + messageText //50-100 bytes
-                            badgeNumber = chatsNum //4 bytes
-                            addCustomProperty('senderId', sender.id) //8 + 8 bytes
-                            addCustomProperty('senderName', sender.name) //10 + 5-15 bytes
-                            addCustomProperty('senderPicId', sender.pictureId) //11 + 8 bytes
+                            //total message cannot exceed 250 bytes
+                            builder.with {
+                                alertBody = sender.name + ': ' + messageText //50-100 bytes
+                                badgeNumber = chatsNum //4 bytes
+                                addCustomProperty('senderId', sender.id) //8 + 8 bytes
+                                addCustomProperty('senderName', sender.name) //10 + 5-15 bytes
+                                addCustomProperty('senderPicId', sender.pictureId) //11 + 8 bytes
+                            }
                         }
+                    } catch (Exception e) {
+                        log.error "Error pushing: ${e.message}"
                     }
                 }
                 if (androidPush) {
-                    sendGCMNotification(receiver.registrationId) { Message.Builder builder ->
-                        builder.with {
-                            collapseKey(sender.name + '-' + androidMsgCollapseId.andIncrement)
-                            timeToLive(60)
-                            delayWhileIdle(true)
-                            data = ['message'   : messageText
-                                    , 'senderId': sender.id?.toString()] as Map<String, String>
+                    try {
+                        sendGCMNotification(receiver.registrationId) { Message.Builder builder ->
+                            builder.with {
+                                collapseKey(sender.name + '-' + androidMsgCollapseId.andIncrement)
+                                timeToLive(60)
+                                delayWhileIdle(true)
+                                data = ['message'   : messageText
+                                        , 'senderId': sender.id?.toString()] as Map<String, String>
+                            }
                         }
+                    } catch (Exception e) {
+                        log.error "Error doing the GCM: ${e.message}"
                     }
                 }
             }

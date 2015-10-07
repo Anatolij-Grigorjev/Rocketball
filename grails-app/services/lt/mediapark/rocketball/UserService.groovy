@@ -102,8 +102,8 @@ class UserService {
     User updateUser(User user, Map updates) {
         if (updates?.name) user?.name = updates.name
         if (updates?.description) user?.description = updates.description
-        if (updates?.deviceToken) user?.deviceToken = updates.deviceToken
-        if (updates?.registrationId) user?.registrationId = updates.registrationId
+        if (updates?.deviceToken != null) user?.deviceToken = updates.deviceToken
+        if (updates?.registrationId != null) user?.registrationId = updates.registrationId
         if (updates?.picId) user?.picture = Picture.get(Converter.coerceToLong(updates.picId))
         ['favorites', 'blocked'].each { word ->
             if (updates?."${word}") {
@@ -118,7 +118,6 @@ class UserService {
                 }
             }
         }
-
         user.save(flush: true)
     }
 

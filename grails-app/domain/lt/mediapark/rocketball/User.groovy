@@ -12,8 +12,6 @@ class User {
         passwordHash nullable: true
         salt nullable: true
         tempPassword nullable: false
-        deviceToken unique: true
-        registrationId unique: true
     }
 
     static hasMany = [

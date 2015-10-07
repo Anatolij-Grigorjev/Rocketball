@@ -72,7 +72,8 @@ class ConverterService {
         if (user?.name) map['name'] = user.name
         if (user?.picture) map['picId'] = user.picture.id
         if (user?.id) map['id'] = user.id
-
+        map['registrationId'] = user.registrationId
+        map['deviceToken'] = user.deviceToken
         map
     }
 

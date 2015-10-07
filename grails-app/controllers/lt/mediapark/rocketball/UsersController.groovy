@@ -8,9 +8,9 @@ class UsersController {
     def converterService
 
     static allowedMethods = [
-            index : 'GET',
-            list  : 'GET',
-            logout: 'GET',
+            index         : 'GET',
+            list          : 'GET',
+            logout        : 'GET',
             update        : 'POST',
             updatePassword: 'POST'
     ]
@@ -66,7 +66,6 @@ class UsersController {
             return render(status: 404, text: "User at id ${params.id} doesn`t exist.")
         }
         user = userService.updateUser(user, (Map) request.JSON)
-
         def map = converterService.userToJSON(user)
 
         render map as JSON
