@@ -94,7 +94,9 @@ grails.gorm.default.constraints = {
 environments {
     development {
         grails.apns.dev.p12.path = '/opt/tomcat-rocketball-test/cert/rocketball_dev.p12'
+        grails.apns.dev.p12.local.path = '/Users/anatolij/Documents/RocketBallDev.p12'
         grails.apns.prod.p12.path = '/opt/tomcat-rocketball-test/cert/rocketball_prod.p12'
+        grails.apns.prod.p12.local.path = '/Users/anatolij/Documents/RocketBallProd.p12'
     }
     production {
         grails.apns.dev.p12.path = '/opt/tomcat-rocketball-prod/cert/rocketball_dev.p12'
@@ -111,7 +113,7 @@ grails.apns.prod.environment = 'production'
 
 //GCM config for pushing to android devices
 
-grails.gcm.browser.key = 'AIzaSyChuyZMLIIl'
+grails.gcm.browser.key = 'AIzaSyB0gZsNPWmTVFqw8hZ36Vt3DwHTkmWWfYE'
 
 // turn off silent GORM errors
 grails.gorm.failOnError = true

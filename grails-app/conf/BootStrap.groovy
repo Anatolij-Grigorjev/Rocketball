@@ -1,5 +1,7 @@
 import com.google.android.gcm.server.Message
 import com.google.android.gcm.server.Sender
+import com.notnoop.apns.APNS
+import com.notnoop.apns.ApnsService
 import com.relayrides.pushy.apns.ApnsEnvironment
 import com.relayrides.pushy.apns.ApnsPushNotification
 import com.relayrides.pushy.apns.PushManager
@@ -21,8 +23,13 @@ class BootStrap {
     def grails
     def grailsApplication
 
+    int prints = 0
+    boolean printedTwice = false
+
     PushManager pushManagerDev
     PushManager pushManagerProd
+
+    ApnsService apnsService
 
     Sender gcmSender
 
@@ -45,7 +52,6 @@ class BootStrap {
                 file
             }
         }
-
         grails = grailsApplication.config.grails
 
         //APNS
@@ -64,8 +70,17 @@ class BootStrap {
         }
         grailsApplication.allArtefacts.each { klass -> addApnsMethods(klass) }
 
+//        apnsService = APNS.newService()
+//                .withCert((String) grails.apns.dev.p12.path,
+//                (String) grails.apns.dev.p12.password)
+//                .withSandboxDestination()
+//                .build()
+
         //GCM
         gcmSender = new Sender(grails.gcm.browser.key)
+        if (gcmSender) {
+            log.debug("GCM manager ${gcmSender?.toString()} initialized!")
+        }
         grailsApplication.allArtefacts.each { klass -> addGCMMethods(klass) }
     }
 
@@ -73,8 +88,15 @@ class BootStrap {
         def managerConfig = new PushManagerConfiguration()
         def apnsEnv = ApnsEnvironment."${grails.apns."${env}".environment}Environment"
         try {
-            def sslCtx = SSLContextUtil.createDefaultSSLContext((String) grails.apns."${env}".p12.path,
-                    (String) grails.apns."${env}".p12.password)
+            def sslCtx
+            try {
+                sslCtx = SSLContextUtil.createDefaultSSLContext((String) grails.apns."${env}".p12.path,
+                        (String) grails.apns."${env}".p12.password)
+            } catch (FileNotFoundException e) {
+                log.error "File not found at ${e.message}, using alternative location..."
+                sslCtx = SSLContextUtil.createDefaultSSLContext((String) grails.apns."${env}".p12.local.path,
+                        (String) grails.apns."${env}".p12.password)
+            }
             def pushManager = new PushManager<ApnsPushNotification>(
                     apnsEnv,
                     sslCtx,
@@ -113,24 +135,33 @@ class BootStrap {
             log.debug('Done with via APNS')
         }
 
+        klass.metaClass.static.sendAPNSAlt = { String token, String text ->
+            log.debug "Sending via alt APNS to ${token}"
+            String payload = APNS.newPayload().alertBody(text).build()
+            apnsService.push(payload.bytes, TokenUtil.tokenStringToByteArray(token))
+            log.debug "Pushed alt!"
+        }
+
         klass.metaClass.static.sendAPNSNotification = { token, builder ->
             log.debug("Transalting token ${token} to bytes")
             def tokenBytes = TokenUtil.tokenStringToByteArray(token)
-
+            log.trace("token bytes ${tokenBytes}")
             ApnsPayloadBuilder payloadBuilder = new ApnsPayloadBuilder()
-            log.debug('Applying payload builder...')
+            log.trace('Applying payload builder...')
             builder(payloadBuilder)
 
             def payload = payloadBuilder.buildWithDefaultMaximumLength()
 
+            log.trace("Created payload: ${payload}")
+
             viaApns { apns ->
                 def q = apns.getQueue()
-                log.debug("Got Q: ${q}")
+                log.debug("Got Q: ${q}\n(total: ${q.size()})")
                 q.put(new SimpleApnsPushNotification(tokenBytes, payload))
                 log.debug('Message put in q!')
             }
 
-            log.debug('Done sending notification')
+            log.trace('Done sending notification')
         }
 
         //classes with device token saved in them can curry the apns closure
@@ -161,12 +192,21 @@ class BootStrap {
         }
 
         theManager?.registerFailedConnectionListener { manager, cause ->
+            if (!printedTwice) {
+                log.error("${manager} failed connection because of ${cause}!", cause)
+                cause.printStackTrace()
+                prints++
+                printedTwice = prints > 1
+            }
             if (cause instanceof SSLHandshakeException) {
                 //need to shutdown manager since no more SSL
                 log.fatal "SSL Certificate expired/invalid (${cause.message})! Shutting down push service..."
                 pushManagerDev.shutdown()
             }
+        }
 
+        theManager?.registerExpiredTokenListener { manager, expiredTokens ->
+            log.info "These are the tokens received after expry: ${expiredTokens}"
         }
 
     }

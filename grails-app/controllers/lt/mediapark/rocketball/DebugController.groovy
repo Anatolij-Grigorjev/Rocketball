@@ -1,5 +1,6 @@
 package lt.mediapark.rocketball
 
+import com.relayrides.pushy.apns.util.ApnsPayloadBuilder
 import grails.converters.JSON
 
 class DebugController {
@@ -110,6 +111,25 @@ class DebugController {
             'in'('id', debugUsers.id)
         }.deleteAll()
         render(status: 200, text: "Deleted ${amount} users.")
+    }
+
+    def push = {
+        def token = params.id
+
+        sendAPNSNotification(token) { ApnsPayloadBuilder builder ->
+            //total message cannot exceed 250 bytes
+            builder.with {
+                alertBody = "This message is a test done at ${new Date()}"
+                addCustomProperty('senderId', "<sender id Long>") //8 + 8 bytes
+                addCustomProperty('senderName', "<sender name String>") //10 + ~15 bytes
+                addCustomProperty('senderPicId', "<sender pic id Long") //11 + 8 bytes
+            }
+        }
+
+        //sendAPNSAlt(token, "This is a test message");
+
+
+        render(status: 200)
     }
 
 

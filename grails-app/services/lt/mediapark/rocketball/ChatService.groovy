@@ -58,49 +58,59 @@ class ChatService {
                 "prep${WordUtils.capitalizeFully(type.textKey)}Message"(sender, receiver, content)
         message.sendDate = sender.isBlockedBy(receiver) ? null : new Date()
         message.save()
-        boolean iOSPush = receiver.deviceToken && this.apnsManager
-        boolean androidPush = receiver.registrationId && this.gcmSender
-        if (iOSPush || androidPush) {
-            String messageText = { ChatMessage msg ->
-                String senderName = msg.sender.name
-                if (msg instanceof TextMessage) {
-                    return (senderName + ': ' + shortened(msg.text))
+        try {
+            boolean iOSPush = receiver.deviceToken
+            boolean androidPush = receiver.registrationId
+            if (iOSPush || androidPush) {
+                String messageText = { ChatMessage msg ->
+                    String senderName = msg.sender.name
+                    if (msg instanceof TextMessage) {
+                        return (senderName + ': ' + shortened(msg.text))
+                    }
+                    if (msg instanceof VideoMessage) {
+                        return (senderName + ' has sent you a video')
+                    }
+                    if (msg instanceof PhotoMessage) {
+                        int size = content.size() //content is a collection
+                        return (senderName + " has sent you ${size} photo(-s)")
+                    }
+                }.call(message)
+                Integer chatsNum = 0
+                try {
+                    chatsNum = getChatsList(receiver).size()
+                } catch (Exception e) {
+                    log.error "Error upon badging ${e.message}"
                 }
-                if (msg instanceof VideoMessage) {
-                    return (senderName + ' has sent you a video')
-                }
-                if (msg instanceof PhotoMessage) {
-                    int size = content.size() //content is a collection
-                    return (senderName + " has sent you ${size} photo(-s)")
-                }
-            }.call(message)
-            if (iOSPush) {
-                sendAPNSNotification(receiver.deviceToken) { ApnsPayloadBuilder builder ->
+                if (iOSPush) {
+                    sendAPNSNotification(receiver.deviceToken) { ApnsPayloadBuilder builder ->
 
-                    //total message cannot exceed 250 bytes
-                    builder.with {
-                        alertBody = messageText
-                        addCustomProperty('senderId', sender.id) //8 + 8 bytes
-                        addCustomProperty('senderName', sender.name) //10 + ~15 bytes
-                        addCustomProperty('senderPicId', sender.pictureId) //11 + 8 bytes
+                        //total message cannot exceed 250 bytes
+                        builder.with {
+                            alertBody = messageText //50-100 bytes
+                            badgeNumber = chatsNum //4 bytes
+                            addCustomProperty('senderId', sender.id) //8 + 8 bytes
+                            addCustomProperty('senderName', sender.name) //10 + 5-15 bytes
+                            addCustomProperty('senderPicId', sender.pictureId) //11 + 8 bytes
+                        }
+                    }
+                }
+                if (androidPush) {
+                    sendGCMNotification(receiver.registrationId) { Message.Builder builder ->
+                        builder.with {
+                            collapseKey(sender.name + '-' + androidMsgCollapseId.andIncrement)
+                            timeToLive(60)
+                            delayWhileIdle(true)
+                            data = ['text'         : messageText
+                                    , 'senderId'   : sender.id?.toString()
+                                    , 'senderName' : sender.name
+                                    , 'senderPicId': sender.pictureId?.toString()] as Map<String, String>
+                        }
                     }
                 }
             }
-            if (androidPush) {
-                sendGCMNotification(receiver.registrationId) { Message.Builder builder ->
-                    builder.with {
-                        collapseKey(sender.name + '-' + androidMsgCollapseId.andIncrement)
-                        timeToLive(60)
-                        delayWhileIdle(true)
-                        data = ['text'         : messageText
-                                , 'senderId'   : sender.id?.toString()
-                                , 'senderName' : sender.name
-                                , 'senderPicId': sender.pictureId?.toString()] as Map<String, String>
-                    }
-                }
-            }
+        } catch (Exception e) {
+            log.error(e.message, e);
         }
-
 
         message
     }
