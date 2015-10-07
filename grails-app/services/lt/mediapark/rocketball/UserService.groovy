@@ -87,13 +87,16 @@ class UserService {
         mapList
     }
 
+
     def updateCoords(User user, Map coords) {
-        if (coords?.lat) user?.currLat = coords.lat
-        if (coords?.lng) user?.currLng = coords.lng
-        loggedInUsers[(user.id)] = new Date().time
-        if (!user.userFbId || user.userFbId > 0)
-            log.debug("Updated user coords! User ${user.name} is now at (${coords.lat};${coords.lng})")
-        user.save(flush: true)
+        synchronized (user) {
+            if (coords?.lat) user?.currLat = coords.lat
+            if (coords?.lng) user?.currLng = coords.lng
+            loggedInUsers[(user.id)] = new Date().time
+            if (!user.userFbId || user.userFbId > 0)
+                log.debug("Updated user coords! User ${user.name} is now at (${coords.lat};${coords.lng})")
+            user.save(flush: true)
+        }
     }
 
     User updateUser(User user, Map updates) {

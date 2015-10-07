@@ -24,7 +24,7 @@ class BootStrap {
     def grailsApplication
 
     int prints = 0
-    boolean printedTwice = false
+    boolean printedN = false
 
     PushManager pushManagerDev
     PushManager pushManagerProd
@@ -62,11 +62,11 @@ class BootStrap {
         registerListeners(pushManagerProd)
         if (pushManagerProd) {
             pushManagerProd?.start()
-            log.debug("Push manager ${pushManagerProd?.name} initialized!")
+            log.info("Push manager ${pushManagerProd?.name} initialized!")
         }
         if (pushManagerDev) {
             pushManagerDev?.start()
-            log.debug("Push manager ${pushManagerDev?.name} initialized!")
+            log.info("Push manager ${pushManagerDev?.name} initialized!")
         }
         grailsApplication.allArtefacts.each { klass -> addApnsMethods(klass) }
 
@@ -79,7 +79,7 @@ class BootStrap {
         //GCM
         gcmSender = new Sender(grails.gcm.browser.key)
         if (gcmSender) {
-            log.debug("GCM manager ${gcmSender?.toString()} initialized!")
+            log.info("GCM manager ${gcmSender?.toString()} initialized!")
         }
         grailsApplication.allArtefacts.each { klass -> addGCMMethods(klass) }
     }
@@ -123,8 +123,9 @@ class BootStrap {
             log.debug("Built message: ${message}")
 
             def result = gcmSender.sendNoRetry(message, regId)
-            log.debug("Send result: ${result}")
+            log.info("GCM Send result: ${result}")
         }
+
     }
 
     def addApnsMethods(def klass) {
@@ -192,11 +193,11 @@ class BootStrap {
         }
 
         theManager?.registerFailedConnectionListener { manager, cause ->
-            if (!printedTwice) {
-                log.error("${manager} failed connection because of ${cause}!", cause)
+            if (!printedN) {
+                log.error("${manager.name} failed connection because of ${cause}!", cause)
                 cause.printStackTrace()
                 prints++
-                printedTwice = prints > 1
+                printedN = prints > 7
             }
             if (cause instanceof SSLHandshakeException) {
                 //need to shutdown manager since no more SSL

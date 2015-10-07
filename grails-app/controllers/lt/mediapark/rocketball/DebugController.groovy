@@ -1,5 +1,6 @@
 package lt.mediapark.rocketball
 
+import com.google.android.gcm.server.Message
 import com.relayrides.pushy.apns.util.ApnsPayloadBuilder
 import grails.converters.JSON
 
@@ -115,11 +116,12 @@ class DebugController {
 
     def push = {
         def token = params.id
-
+        def rnd = new Random()
         sendAPNSNotification(token) { ApnsPayloadBuilder builder ->
             //total message cannot exceed 250 bytes
             builder.with {
                 alertBody = "This message is a test done at ${new Date()}"
+                badgeNumber = rnd.nextInt(17)
                 addCustomProperty('senderId', "<sender id Long>") //8 + 8 bytes
                 addCustomProperty('senderName', "<sender name String>") //10 + ~15 bytes
                 addCustomProperty('senderPicId', "<sender pic id Long") //11 + 8 bytes
@@ -128,6 +130,23 @@ class DebugController {
 
         //sendAPNSAlt(token, "This is a test message");
 
+
+        render(status: 200)
+    }
+
+    def gcm = {
+        def regId = params.id
+        sendGCMNotification(regId) { Message.Builder builder ->
+            builder.with {
+                collapseKey('testKey')
+                timeToLive(60)
+                delayWhileIdle(true)
+                data = ['message'      : 'This be the test message text'
+                        , 'senderId'   : '<extra param sender Id>'
+                        , 'senderName' : '<extra param sender name>'
+                        , 'senderPicId': '<extra param sender pic Id>'] as Map<String, String>
+            }
+        }
 
         render(status: 200)
     }

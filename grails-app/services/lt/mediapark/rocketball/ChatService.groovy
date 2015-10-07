@@ -3,7 +3,6 @@ package lt.mediapark.rocketball
 import com.google.android.gcm.server.Message
 import com.relayrides.pushy.apns.util.ApnsPayloadBuilder
 import grails.transaction.Transactional
-import groovyx.gpars.GParsPool
 import lt.mediapark.rocketball.clsf.MessageType
 import lt.mediapark.rocketball.message.ChatMessage
 import lt.mediapark.rocketball.message.PhotoMessage
@@ -65,7 +64,7 @@ class ChatService {
                 String messageText = { ChatMessage msg ->
                     String senderName = msg.sender.name
                     if (msg instanceof TextMessage) {
-                        return (senderName + ': ' + shortened(msg.text))
+                        return (shortened(msg.text))
                     }
                     if (msg instanceof VideoMessage) {
                         return (senderName + ' has sent you a video')
@@ -76,17 +75,19 @@ class ChatService {
                     }
                 }.call(message)
                 Integer chatsNum = 0
-                try {
-                    chatsNum = getChatsList(receiver).size()
-                } catch (Exception e) {
-                    log.error "Error upon badging ${e.message}"
-                }
                 if (iOSPush) {
+                    try {
+                        ChatMessage.withNewSession {
+                            chatsNum = getChatsList(receiver).findAll { !((ChatMessage) it).receiveDate }.size()
+                        }
+                    } catch (Exception e) {
+                        log.error "Error upon badging ${e.message}"
+                    }
                     sendAPNSNotification(receiver.deviceToken) { ApnsPayloadBuilder builder ->
 
                         //total message cannot exceed 250 bytes
                         builder.with {
-                            alertBody = messageText //50-100 bytes
+                            alertBody = sender.name + ': ' + messageText //50-100 bytes
                             badgeNumber = chatsNum //4 bytes
                             addCustomProperty('senderId', sender.id) //8 + 8 bytes
                             addCustomProperty('senderName', sender.name) //10 + 5-15 bytes
@@ -100,10 +101,8 @@ class ChatService {
                             collapseKey(sender.name + '-' + androidMsgCollapseId.andIncrement)
                             timeToLive(60)
                             delayWhileIdle(true)
-                            data = ['text'         : messageText
-                                    , 'senderId'   : sender.id?.toString()
-                                    , 'senderName' : sender.name
-                                    , 'senderPicId': sender.pictureId?.toString()] as Map<String, String>
+                            data = ['message'   : messageText
+                                    , 'senderId': sender.id?.toString()] as Map<String, String>
                         }
                     }
                 }
@@ -142,6 +141,7 @@ class ChatService {
         videoMessage.save()
     }
 
+
     def getChatsList(User user) {
         //its important to sort in the order opposite of the one we want
         List<ChatMessage> messages = ChatMessage.createCriteria().list {
@@ -152,17 +152,15 @@ class ChatService {
             order('sendDate', 'asc')
         } as List<ChatMessage>
 
-        GParsPool.withPool(4) {
-            //filter away those who blocked us
-            messages = messages.findAllParallel { ChatMessage msg ->
-                boolean isSender = msg.sender == user
-                def prop = isSender ? 'receiver' : 'sender'
-                boolean pass = false
-                ChatMessage.withNewSession {
-                    pass = !msg."${prop}"?.blocked?.contains(user)
-                }
-                pass
+        //filter away those who blocked us
+        messages = messages.findAll { ChatMessage msg ->
+            boolean isSender = msg.sender == user
+            def prop = isSender ? 'receiver' : 'sender'
+            boolean pass = false
+            User.withNewSession {
+                pass = !msg."${prop}"?.blocked?.contains(user)
             }
+            pass
         }
 
         //the map wll keep merging messages into each other until the last one
