@@ -8,15 +8,17 @@ import groovy.transform.CompileStatic
 @CompileStatic
 class Constants {
 
-    public static Integer PEOPLE_RADIUS_M;
+    public static Double PEOPLE_RADIUS_M;
     public static Long HEARTBEAT_PERIOD_MS;
     public static Long TTL_PERIOD_MS;
+    public static Double MIN_WALK_DISTANCE;
 
     public static final String VIDEO_FILE_KEY = 'video'
     public static final String AVATAR_PICTURE_FILE_KEY = 'photo'
 
     public static void init(Map grails) {
-        PEOPLE_RADIUS_M = ((Map<?, Integer>) grails.rocketball).radius
+        PEOPLE_RADIUS_M = ((Map<?, Double>) grails.rocketball).radius
+        MIN_WALK_DISTANCE = ((Map<?, Double>) grails.rocketball).mindist
         HEARTBEAT_PERIOD_MS = ((Map<?, Long>) grails.rocketball).heartbeat
         TTL_PERIOD_MS = ((Map<?, Long>) grails.rocketball).ttl
     }

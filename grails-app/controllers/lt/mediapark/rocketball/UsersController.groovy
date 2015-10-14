@@ -1,6 +1,7 @@
 package lt.mediapark.rocketball
 
 import grails.converters.JSON
+import lt.mediapark.rocketball.utils.Constants
 
 class UsersController {
 
@@ -55,7 +56,11 @@ class UsersController {
         if (!user) {
             return render(status: 404, text: "User at id ${params.id} doesn`t exist.")
         }
-        userService.updateCoords(user, (Map) request.JSON)
+        //no point in updating too fast
+        Long lastUpdate = userService.loggedInUsers[(user.id)]
+        if (lastUpdate && (new Date().time - lastUpdate) > Constants.HEARTBEAT_PERIOD_MS) {
+            userService.updateCoords(user, (Map) request.JSON)
+        }
 
         render 200
     }

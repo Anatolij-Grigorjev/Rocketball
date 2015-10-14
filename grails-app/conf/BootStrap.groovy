@@ -8,6 +8,7 @@ import com.relayrides.pushy.apns.util.ApnsPayloadBuilder
 import com.relayrides.pushy.apns.util.SSLContextUtil
 import com.relayrides.pushy.apns.util.SimpleApnsPushNotification
 import com.relayrides.pushy.apns.util.TokenUtil
+import grails.util.Environment
 import lt.mediapark.rocketball.utils.Constants
 import rocketball.EmitterJob
 import rocketball.PurgerJob
@@ -34,8 +35,9 @@ class BootStrap {
         Constants.init(grailsApplication.config.grails)
 
         PurgerJob.schedule(Constants.TTL_PERIOD_MS)
-        EmitterJob.schedule(Constants.HEARTBEAT_PERIOD_MS)
-
+        if (Environment.DEVELOPMENT == Environment.current) {
+            EmitterJob.schedule(Constants.HEARTBEAT_PERIOD_MS)
+        }
         grailsApplication.allArtefacts.each {
             it.metaClass.downloadImage = { String address ->
                 if (!address) {

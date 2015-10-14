@@ -130,7 +130,8 @@ environments {
     }
 }
 
-grails.rocketball.radius = 1000 // radius in meters
+grails.rocketball.radius = 1000.1 // radius in meters
+grails.rocketball.mindist = 20.5 //minimum distance to walk from last position before coordinates get updated
 
 environments {
     development {
