@@ -98,6 +98,7 @@ class UsersController {
         def user = userService.get(params.id, false)
         if (user) {
             userService.loggedInUsers.remove(user.id)
+            userService.clearCoords(user)
             return render(status: 200)
         } else {
             return render(status: 400, text: "User not logged in or non-existant!")

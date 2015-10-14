@@ -48,6 +48,11 @@ class UrlMappings {
             action = 'regNative'
         }
 
+        "/logout/$id" {
+            controller = 'users'
+            action = 'logout'
+        }
+
         "/login/app" {
             controller = 'login'
             action = 'loginNative'

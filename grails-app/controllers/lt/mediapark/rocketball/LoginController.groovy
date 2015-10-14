@@ -47,7 +47,7 @@ class LoginController {
             user.registrationId = request.JSON.registrationId
 
             user = userService.finalizeUser(user)
-            userService.loggedInUsers << [(user.id): new Date().time]
+            userService.loggedInUsers << [(user.id): 0]
 
             def userMap = converterService.userToJSON(user)
             userService.tempUsers.remove(fbId)
@@ -64,7 +64,7 @@ class LoginController {
         def fbId = Long.parseLong(params.id)
         def user = userService.userByFbId(fbId)
         if (user) {
-            userService.loggedInUsers << [(user.id): new Date().time]
+            userService.loggedInUsers << [(user.id): 0]
             def map = converterService.userToJSON(user)
             render map as JSON
         } else {

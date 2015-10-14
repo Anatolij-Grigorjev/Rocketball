@@ -36,7 +36,7 @@ class BootStrap {
 
         PurgerJob.schedule(Constants.TTL_PERIOD_MS)
         if (Environment.DEVELOPMENT == Environment.current) {
-            EmitterJob.schedule(Constants.HEARTBEAT_PERIOD_MS)
+            EmitterJob.schedule(Constants.HEARTBEAT_PERIOD_MS + 10)
         }
         grailsApplication.allArtefacts.each {
             it.metaClass.downloadImage = { String address ->
