@@ -15,7 +15,8 @@ class EmitterJob {
     def execute() {
         if (Environment.current == Environment.DEVELOPMENT) {
             int emitts = 0
-            User.findAll { userFbId < 0 }.each {
+            def users = User.findAllByUserFbIdLessThan(0)
+            users.findAll { userService.loggedInUsers.keySet().contains(it.id) }.each {
                 emitts++
                 coordsEmitter(it, 54.689566, 25.272500)
             }

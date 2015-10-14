@@ -76,11 +76,9 @@ class UserService {
 
         def mapList
         List<User> filtered = []
-        GParsPool.withPool {
-            filtered = users.findAllParallel {
-                (DistanceCalc.getHavershineDistance(it, user) <= Constants.PEOPLE_RADIUS_M
-                        && !it.blocked.contains(user))
-            }
+        filtered = users.findAll {
+            (DistanceCalc.getHavershineDistance(it, user) <= Constants.PEOPLE_RADIUS_M
+                    && !it.blocked?.contains(user))
         }
         mapList = filtered?.collect { converterService.userToJSON(it, user) } as List<Map>
         mapList.sort(true) { a, b -> a.distance <=> b.distance }
@@ -90,7 +88,10 @@ class UserService {
 
     def updateCoords(User user, Map coords) {
         if (coords?.lat && coords?.lng) {
-            def distance = DistanceCalc.getHavershineDistance(user.currLat, user.currLng, coords.lat, coords.lng)
+            def distance = Double.POSITIVE_INFINITY
+            if (user.hasLocation()) {
+                distance = DistanceCalc.getHavershineDistance(user.currLat, user.currLng, coords.lat, coords.lng)
+            }
             if (distance > Constants.MIN_WALK_DISTANCE) {
                 user.currLng = coords.lng
                 user.currLat = coords.lat
