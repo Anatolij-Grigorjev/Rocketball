@@ -97,6 +97,7 @@ class UsersController {
     def logout = {
         def user = userService.get(params.id, false)
         if (user) {
+            log.info("Logging out user ${user.id}!")
             userService.loggedInUsers.remove(user.id)
             userService.clearCoords(user)
             return render(status: 200)

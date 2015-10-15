@@ -1,7 +1,6 @@
 package lt.mediapark.rocketball
 
 import grails.transaction.Transactional
-import groovyx.gpars.GParsPool
 import lt.mediapark.rocketball.utils.Constants
 import lt.mediapark.rocketball.utils.Converter
 import lt.mediapark.rocketball.utils.DistanceCalc
@@ -33,14 +32,14 @@ class UserService {
 
     def User get(def anyUserId, boolean canBeOffline = false) {
         Long userId = Converter.coerceToLong(anyUserId)
-        log.info("User id ${userId} was requested,${canBeOffline ? " " : " NOT "}OK to search storage users...")
+        log.debug("User id ${userId} was requested,${canBeOffline ? " " : " NOT "}OK to search storage users...")
         def user
         if (loggedInUsers.containsKey(userId)) {
-            log.info("Fetching ${userId} from cache!")
+            log.debug("Fetching ${userId} from cache!")
             user = User.get(userId)
         }
-        if (!userId && canBeOffline) {
-            log.info("Fetching ${userId} from storage!")
+        if (!user && canBeOffline) {
+            log.debug("Fetching ${userId} from storage!")
             user = User.findById(userId)
         }
         user
@@ -53,10 +52,7 @@ class UserService {
             return null
         }
         def mapList
-        List<User> userFavsList = []
-        GParsPool.withPool {
-            userFavsList = user.favorites.findAllParallel { User fav -> !fav.blocked.contains(user) } as List<User>
-        }
+        List<User> userFavsList = user.favorites.findAll { !it.blocked.contains(user) } as List<User>
         mapList = userFavsList.collect { converterService.userToJSON(it, user) } as List<Map>
         mapList.sort(true) { a, b -> a.distance <=> b.distance }
         mapList
