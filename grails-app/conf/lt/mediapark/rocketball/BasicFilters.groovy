@@ -8,8 +8,10 @@ class BasicFilters {
                 log.debug("REQUEST:\n"
                         + "------------------------------------------------------------\n"
                         + "DESTINATION: ${request.requestURL.append(request.queryString ?: '')}\n"
-                        + "HEADERS: ${request.getHeaderNames().collect { it + "=" + request.getHeader(it) }}\n"
-                + "${request.JSON? "JSON: ${request.JSON}" : ""}")
+                        + "HEADERS: ${request.getHeaderNames().collect { it + "=" + request.getHeader(it) }}\n")
+                if (request.JSON) {
+                    log.info "RQ_JSON: ${request.JSON}"
+                }
             }
             after = {
                 log.debug("RESPONSE:\n" +

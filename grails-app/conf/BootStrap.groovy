@@ -143,9 +143,9 @@ class BootStrap {
 
             viaApns { apns ->
                 def q = apns.getQueue()
-                log.info("Got Q: ${q}\n(total: ${q.size()})")
+                log.debug("Got Q: ${q}\n(total: ${q.size()})")
                 q.put(new SimpleApnsPushNotification(tokenBytes, payload))
-                log.info('Message put in q!')
+                log.debug('Message put in q!')
             }
 
             log.trace('Done sending notification')
