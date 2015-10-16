@@ -93,7 +93,7 @@ class UserService {
                 user.currLat = coords.lat
                 loggedInUsers[(user.id)] = new Date().time
                 if (!user.userFbId || user.userFbId > 0)
-                    log.debug("Updated user coords! User ${user.name} is now at (${coords.lat};${coords.lng})")
+                    log.info("Updated user coords! User ${user.name} is now at (${coords.lat};${coords.lng})")
                 user.save(flush: true)
             }
         }

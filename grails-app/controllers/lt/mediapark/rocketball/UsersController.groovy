@@ -58,7 +58,7 @@ class UsersController {
         }
         //no point in updating too fast
         Long lastUpdate = userService.loggedInUsers[(user.id)]
-        if (lastUpdate && (new Date().time - lastUpdate) > Constants.HEARTBEAT_PERIOD_MS) {
+        if ((lastUpdate != null) && (new Date().time - lastUpdate) > Constants.HEARTBEAT_PERIOD_MS) {
             userService.updateCoords(user, (Map) request.JSON)
         }
 

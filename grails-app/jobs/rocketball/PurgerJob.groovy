@@ -17,9 +17,11 @@ class PurgerJob {
             Map<Long, Long> ids = [:] << userService.loggedInUsers
             int purges = 0
             long now = new Date().time
-            ids.each {
+            //when users are first registered, the timestamp here is 0,
+            //need to make sure not to purge those on the next take
+            ids.findAll { it.value > 0 }.each {
                 //too much time has passed, no more coords for this person
-                if (now - it.value > Constants.TTL_PERIOD_MS) {
+                if (Math.abs(now - it.value) > Constants.TTL_PERIOD_MS) {
                     userService.clearCoords(it.key)
                     purges++
                 }

@@ -32,14 +32,19 @@ environments {
     production {
         dataSource {
             dbCreate = "update"
-            url = "jdbc:h2:prodDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE"
+            url = "jdbc:mysql://localhost/rocketball_prod?useUnicode=yes&characterEncoding=UTF-8"
+            driverClassName = "com.mysql.jdbc.Driver"
+            dialect = org.hibernate.dialect.MySQL5InnoDBDialect
+            username = "rocketball"
+            logSql = false
+            password = "Rocketball2015"
             properties {
                 // See http://grails.org/doc/latest/guide/conf.html#dataSource for documentation
                 jmxEnabled = true
-                initialSize = 5
-                maxActive = 50
-                minIdle = 5
-                maxIdle = 25
+                initialSize = 50
+                maxActive = 500
+                minIdle = 25
+                maxIdle = 75
                 maxWait = 10000
                 maxAge = 10 * 60000
                 timeBetweenEvictionRunsMillis = 5000

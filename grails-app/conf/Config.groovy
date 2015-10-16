@@ -99,8 +99,8 @@ environments {
         grails.apns.prod.p12.local.path = '/Users/anatolij/Documents/RocketBallProd.p12'
     }
     production {
-        grails.apns.dev.p12.path = '/opt/tomcat-rocketball-prod/cert/rocketball_dev.p12'
-        grails.apns.prod.p12.path = '/opt/tomcat-rocketball-prod/cert/rocketball_prod.p12'
+        grails.apns.dev.p12.path = '/opt/tomcat-rocketball/cert/rocketball_dev.p12'
+        grails.apns.prod.p12.path = '/opt/tomcat-rocketball/cert/rocketball_prod.p12'
     }
 }
 
