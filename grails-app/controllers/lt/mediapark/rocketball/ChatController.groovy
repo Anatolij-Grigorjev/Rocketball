@@ -30,7 +30,7 @@ class ChatController {
             def user1 = userService.get(params.id1, !requestorIs1)
             def user2 = userService.get(params.id2, requestorIs1)
             if (!user1 || !user2) {
-                return render(status: 404, text: "One or both users not found at ids ${params.id1} and ${params.id2}")
+                return render(["registered": false] as JSON)
             }
             Date time = params.time ? new Date(Converter.coerceToLong(params.time)) : new Date()
             Integer limit = Integer.parseInt(params.msgLmt ?: "50")
@@ -58,6 +58,11 @@ class ChatController {
         def msgId = Converter.coerceToLong(params.msgId)
         //method arguments list
         def argsList = [senderId, receiverId]
+
+        def user = userService.get(senderId)
+        if (!user) {
+            return render(["registered": false] as JSON)
+        }
 
         if (!msgId) {
             //resolve message type based on request type and files in request
@@ -108,7 +113,7 @@ class ChatController {
     def list = {
         def user = userService.get(Converter.coerceToLong(params.id), true)
         if (!user) {
-            return render(status: 404, text: "User at id ${params.id} not found")
+            return render(["registered": false])
         }
         List<ChatMessage> listMessages = chatService.getChatsList(user)
         def map = listMessages.collect {

@@ -37,12 +37,17 @@ class MediaController {
             def picIdMap = [pictureId: picture.id]
 
             render picIdMap as JSON
+        } else {
+            return render([registered: false] as JSON)
         }
     }
 
 
     def getVideo = {
         Long requestorId = Long.parseLong(params.requestor)
+        if (!userService.get(requestorId)) {
+            return render([registered: false] as JSON)
+        }
         Long vidId = Long.parseLong(params.id)
 
         def video = mediaService.getVideoFromMessage(vidId, requestorId)
@@ -62,6 +67,9 @@ class MediaController {
 
     def getPhotoAlbum = {
         Long requestorId = params.requestor ? Long.parseLong(params.requestor) : null
+        if (!userService.get(requestorId)) {
+            return render([registered: false] as JSON)
+        }
         Long albumId = params.id ? Long.parseLong(params.id) : null
 
         ByteArrayOutputStream outputBytes = mediaService.createAlbumZip(albumId, requestorId)

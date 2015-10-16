@@ -43,7 +43,7 @@ class UsersController {
         Long userId = Long.parseLong(params.id)
         def list = userService."${type}List"(userId)
         if (list == null) {
-            return render(status: 404, text: "User at id ${params.id} doesn`t exist.")
+            return render(["registered": false] as JSON)
         }
 
         render list as JSON
@@ -54,7 +54,7 @@ class UsersController {
     def coords = {
         def user = userService.get(params.id, false)
         if (!user) {
-            return render(status: 404, text: "User at id ${params.id} doesn`t exist.")
+            return render(["registered": false] as JSON)
         }
         //no point in updating too fast
         Long lastUpdate = userService.loggedInUsers[(user.id)]
@@ -68,7 +68,7 @@ class UsersController {
     def update = {
         def user = userService.get(params.id, false)
         if (!user) {
-            return render(status: 404, text: "User at id ${params.id} doesn`t exist.")
+            return render(["registered": false])
         }
         user = userService.updateUser(user, (Map) request.JSON)
         def map = converterService.userToJSON(user)
@@ -79,7 +79,7 @@ class UsersController {
     def updatePassword = {
         def user = userService.get(params.id, false)
         if (!user) {
-            return render(status: 404, text: "User at id ${params.id} doesn`t exist.")
+            return render(["registered": false])
         }
         def passSha1 = request.JSON.password
         def oldPassSha1 = request.JSON.oldPassword
@@ -102,7 +102,7 @@ class UsersController {
             userService.clearCoords(user)
             return render(status: 200)
         } else {
-            return render(status: 400, text: "User not logged in or non-existant!")
+            return render(status: 200, text: "User not logged in or non-existant!")
         }
     }
 
