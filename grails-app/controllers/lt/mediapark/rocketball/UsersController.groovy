@@ -97,7 +97,9 @@ class UsersController {
 
     def registered = {
         def user = userService.get(params.id, true)
-        def map = [registered: (!!user), name: (user ? user.name : null)]
+        def map = [registered: (!!user),
+                   name      : (user ? user.name : null),
+                   loggedIn  : (userService.loggedInUsers.containsKey(user.id))]
         render map as JSON
     }
 

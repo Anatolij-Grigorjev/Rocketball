@@ -60,7 +60,7 @@ class ChatService {
         if (message.sendDate) {
             try {
                 if (userService.loggedInUsers.containsKey(receiver.id)) {
-                    tryFlushMessagesAsync(receiver)
+                    tryNotifyUser(receiver, message)
                 }
             } catch (Exception e) {
                 log.error(e.message, e);
@@ -70,13 +70,42 @@ class ChatService {
     }
 
     def tryFlushMessagesAsync(User user) {
+        //nowhere to send
+        if (!user.registrationId?.trim() && !user.deviceToken?.trim()) {
+            return;
+        }
+        log.debug("About to start async worker for ${user.name}")
+        //async perform checking and sending for the user
         Thread.start("[${user.name}-FLUSH]") {
             if (user && userService.loggedInUsers.containsKey(user.id)) {
-                def unreadMessages = ChatMessage.findAllByReceiverAndReceiveDateIsNull(user)
-                unreadMessages.each { msg ->
-                    def evidence = NotificationLog.findByNotifiedAndNotification(user, msg)
-                    if (!evidence) {
-                        tryNotifyUser(user, msg)
+                //get hibernate session to check messages
+                ChatMessage.withNewSession {
+                    def unreadMessages = ChatMessage.findAllByReceiverAndReceiveDateIsNull(user)
+                    //no reason to send
+                    if (!unreadMessages) {
+                        return;
+                    }
+                    log.debug("Found ${unreadMessages.size()} unread message(-s)!")
+                    //get messages notifications
+                    NotificationLog.withSession {
+                        def notifications = NotificationLog.executeQuery(
+                                "FROM NotificationLog log " +
+                                        "WHERE log.notified.id = :userId " +
+                                        "AND log.notification.id IN (:msgIds)",
+                                [userId: user.id,
+                                 msgIds: unreadMessages.id]
+                        )
+                        log.debug("Found ${notifications.size()} notifications for messages")
+                        //leave only messages without notifications found
+                        unreadMessages.removeAll(notifications.notification)
+                        log.debug("${unreadMessages.size()} messages left unflushed, attempting flush!")
+                        //all was sent
+                        if (!unreadMessages) {
+                            return;
+                        }
+                        unreadMessages.each { msg ->
+                            tryNotifyUser(user, msg)
+                        }
                     }
                 }
             }
@@ -86,6 +115,9 @@ class ChatService {
     private void tryNotifyUser(User receiver, ChatMessage message) {
         boolean iOSPush = receiver.deviceToken?.trim()
         boolean androidPush = receiver.registrationId?.trim()
+        log.debug("Got tokens:\n" +
+                "iOS: ${receiver.deviceToken}\n" +
+                "Android: ${receiver.registrationId}")
         if (iOSPush || androidPush) {
             def content = message.content
             def sender = message.sender
@@ -121,7 +153,7 @@ class ChatService {
                             addCustomProperty('senderPicId', sender.pictureId) //11 + 8 bytes
                         }
                     }
-                    logNotification(receiver, message)
+                    logNotification(receiver, message, 'APNS')
                 } catch (Exception e) {
                     log.error "Error APNS pushing: ${e.message}"
                 }
@@ -137,7 +169,7 @@ class ChatService {
                                     , 'senderId': sender.id?.toString()] as Map<String, String>
                         }
                     }
-                    logNotification(receiver, message)
+                    logNotification(receiver, message, 'GCM')
                 } catch (Exception e) {
                     log.error "Error doing the GCM: ${e.message}"
                 }
@@ -145,10 +177,10 @@ class ChatService {
         }
     }
 
-    def logNotification(User user, ChatMessage message) {
+    def logNotification(User user, ChatMessage message, String service = null) {
         //notifications get logged so as to later dump them on the person
         //in need of notifying
-        def log = new NotificationLog(notified: user, notification: message)
+        def log = new NotificationLog(notified: user, notification: message, service: service)
         log.save()
     }
 

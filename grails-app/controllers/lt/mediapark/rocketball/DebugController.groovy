@@ -159,4 +159,10 @@ class DebugController {
     }
 
 
+    def insys = {
+        def results = [amount: userService.loggedInUsers.size(), users: userService.loggedInUsers]
+        render results as JSON
+    }
+
+
 }

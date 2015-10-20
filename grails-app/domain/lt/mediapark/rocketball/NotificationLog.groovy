@@ -11,4 +11,5 @@ class NotificationLog {
 
     User notified
     ChatMessage notification
+    String service
 }
