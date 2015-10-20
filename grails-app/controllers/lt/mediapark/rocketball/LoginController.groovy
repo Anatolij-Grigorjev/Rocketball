@@ -18,6 +18,7 @@ class LoginController {
     def userService
     def converterService
     def mailService
+    def chatService
 
     def regPicture = {
         CommonsMultipartFile picture = request.getFile('photo')
@@ -65,6 +66,7 @@ class LoginController {
         def user = userService.userByFbId(fbId)
         if (user) {
             userService.loggedInUsers << [(user.id): 0]
+            chatService.tryFlushMessagesAsync(user)
             def map = converterService.userToJSON(user)
             render map as JSON
         } else {
@@ -84,6 +86,8 @@ class LoginController {
             }
             def hash = (password + user.salt).encodeAsSHA256()
             if (hash == user.passwordHash) {
+                userService.loggedInUsers << [(user.id): 0]
+                chatService.tryFlushMessagesAsync(user)
                 def map = converterService.userToJSON(user)
                 render map as JSON
             } else {

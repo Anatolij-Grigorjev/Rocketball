@@ -12,6 +12,7 @@ class UsersController {
             index         : 'GET',
             list          : 'GET',
             logout        : 'GET',
+            registered: 'GET',
             update        : 'POST',
             updatePassword: 'POST'
     ]
@@ -92,6 +93,12 @@ class UsersController {
         } else {
             return render(status: 403, text: "Old password incorrect!")
         }
+    }
+
+    def registered = {
+        def user = userService.get(params.id, true)
+        def map = [registered: (!!user), name: (user ? user.name : null)]
+        render map as JSON
     }
 
     def logout = {

@@ -13,6 +13,7 @@ class UserService {
     final int MIN_SALT_LENGTH = 40
 
     def converterService
+    def chatService
     SecureRandom secureRandom = new SecureRandom("This is a seed".bytes)
 
     Map<String, User> tempUsers = [:]
@@ -33,7 +34,7 @@ class UserService {
     def User get(def anyUserId, boolean canBeOffline = false) {
         Long userId = Converter.coerceToLong(anyUserId)
         log.debug("User id ${userId} was requested,${canBeOffline ? " " : " NOT "}OK to search storage users...")
-        def user
+        def user = null
         if (loggedInUsers.containsKey(userId)) {
             log.debug("Fetching ${userId} from cache!")
             user = User.get(userId)
@@ -102,8 +103,11 @@ class UserService {
     User updateUser(User user, Map updates) {
         if (updates?.name) user?.name = updates.name
         if (updates?.description) user?.description = updates.description
-        if (updates?.deviceToken != null) user?.deviceToken = updates.deviceToken
-        if (updates?.registrationId != null) user?.registrationId = updates.registrationId
+        if (updates?.deviceToken || updates?.registrationId) {
+            if (updates?.deviceToken != null) user?.deviceToken = updates.deviceToken
+            if (updates?.registrationId != null) user?.registrationId = updates.registrationId
+            chatService.tryFlushMessagesAsync(user)
+        }
         if (updates?.picId) user?.picture = Picture.get(Converter.coerceToLong(updates.picId))
         ['favorites', 'blocked'].each { word ->
             if (updates?."${word}") {
