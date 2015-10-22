@@ -88,6 +88,10 @@ grails.hibernate.osiv.readonly = false
 grails.gorm.default.constraints = {
     '*'(nullable: true)
 }
+grails.gorm.default.mapping = {
+    dynamicUpdate(true)
+    version(false)
+}
 
 //APNS config for dev pushing with prod fallback
 
