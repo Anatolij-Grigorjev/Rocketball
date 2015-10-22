@@ -32,7 +32,12 @@ environments {
     production {
         dataSource {
             dbCreate = "update"
-            url = "jdbc:mysql://localhost/rocketball_prod?useUnicode=yes&characterEncoding=UTF-8"
+            url = "jdbc:mysql://localhost/rocketball_prod?" +
+                    "useUnicode=yes" +
+                    "&default-character-set=utf8mb4" +
+                    "&character-set-client-handshake=FALSE" +
+                    "&character-set-server=utf8mb4" +
+                    "&collation-server=utf8mb4_unicode_ci"
             driverClassName = "com.mysql.jdbc.Driver"
             dialect = org.hibernate.dialect.MySQL5InnoDBDialect
             username = "rocketball"

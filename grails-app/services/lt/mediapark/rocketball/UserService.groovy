@@ -108,6 +108,7 @@ class UserService {
             if (updates?.registrationId != null) user?.registrationId = updates.registrationId
             chatService.tryFlushMessagesAsync(user)
         }
+        if (updates?.email) user?.email = updates.email
         if (updates?.picId) user?.picture = Picture.get(Converter.coerceToLong(updates.picId))
         ['favorites', 'blocked'].each { word ->
             if (updates?."${word}") {
@@ -122,7 +123,7 @@ class UserService {
                 }
             }
         }
-        user.save(flush: true)
+        user.save()
     }
 
     /**
@@ -158,7 +159,7 @@ class UserService {
         log.debug('Removing coords for user: ' + user.name)
         user.currLat = null
         user.currLng = null
-        user.save(flush: true)
+        user.save()
     }
 
     def generateSalt(int length) {
@@ -179,7 +180,7 @@ class UserService {
         }
         newPass += ('' + secureRandom.nextInt(100)).padLeft(2, '0')
         updateUserPassword(user, newPass.encodeAsSHA1(), true)
-        user.save(flush: true)
+        user.save()
         newPass
     }
 }

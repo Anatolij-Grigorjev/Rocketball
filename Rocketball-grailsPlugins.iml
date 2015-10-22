@@ -121,6 +121,7 @@
           <root url="jar://$MAVEN_REPOSITORY$/com/relayrides/pushy/0.4.3/pushy-0.4.3.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/com/ganyo/gcm-server/1.0.2/gcm-server-1.0.2.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/mysql/mysql-connector-java/5.1.29/mysql-connector-java-5.1.29.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>

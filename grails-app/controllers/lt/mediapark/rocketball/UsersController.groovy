@@ -89,7 +89,8 @@ class UsersController {
             user.save(flush: true)
             def map = converterService.userToJSON(user)
 
-            return render(map) as JSON
+
+            return render(map as JSON)
         } else {
             return render(status: 403, text: "Old password incorrect!")
         }
