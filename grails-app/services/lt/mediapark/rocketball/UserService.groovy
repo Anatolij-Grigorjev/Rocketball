@@ -155,11 +155,15 @@ class UserService {
         clearCoords(user)
     }
 
-    def clearCoords(User user) {
+    boolean clearCoords(User user) {
         log.debug('Removing coords for user: ' + user.name)
-        user.currLat = null
-        user.currLng = null
-        user.save()
+        if (user.hasLocation()) {
+            user.currLat = null
+            user.currLng = null
+            user.save()
+            return true
+        }
+        false
     }
 
     def generateSalt(int length) {

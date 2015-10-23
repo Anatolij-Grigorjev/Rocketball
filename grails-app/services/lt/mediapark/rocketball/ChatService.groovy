@@ -137,7 +137,7 @@ class ChatService {
             Integer chatsNum = 0
             if (iOSPush) {
                 try {
-                    chatsNum = getChatsList(receiver).findAll { !((ChatMessage) it).receiveDate }.size()
+                    chatsNum = getChatsList(receiver).findAll { ChatMessage it -> !it.receiveDate && it.receiver.id == receiver.id }.size()
                 } catch (Exception e) {
                     log.error "Error upon badging ${e.message}"
                 }

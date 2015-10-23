@@ -22,8 +22,11 @@ class PurgerJob {
             ids.findAll { it.value > 0 }.each {
                 //too much time has passed, no more coords for this person
                 if (Math.abs(now - it.value) > Constants.TTL_PERIOD_MS) {
-                    userService.clearCoords(it.key)
-                    purges++
+                    //returns boolean true if actually cleared some shit
+                    def didIt = userService.clearCoords(it.key)
+                    if (didIt) {
+                        purges++
+                    }
                 }
             }
             log.info("${Environment.current == Environment.DEVELOPMENT ? "Skipped" : "Purged"} ${purges} user coordinates")
