@@ -80,6 +80,8 @@ class MediaController {
 
         response.setHeader("Content-disposition", "filename=\"album-${albumId}.zip\"")
         response.contentType = "application/zip"
+        response.contentLength = outputBytes.size()
+
         response.outputStream << outputBytes.toByteArray()
         response.outputStream.flush()
 
