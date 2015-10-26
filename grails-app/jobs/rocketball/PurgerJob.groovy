@@ -29,7 +29,9 @@ class PurgerJob {
                     }
                 }
             }
-            log.info("${Environment.current == Environment.DEVELOPMENT ? "Skipped" : "Purged"} ${purges} user coordinates")
+            if (purges) {
+                log.info("${Environment.current == Environment.DEVELOPMENT ? "Skipped" : "Purged"} ${purges} user coordinates")
+            }
         }
     }
 }
