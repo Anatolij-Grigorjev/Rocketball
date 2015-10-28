@@ -148,6 +148,7 @@ class ChatService {
                         builder.with {
                             alertBody = sender.name + ': ' + messageText //50-100 bytes
                             badgeNumber = chatsNum //4 bytes
+                            soundFileName = 'default' //8 bytes
                             addCustomProperty('senderId', sender.id) //8 + 8 bytes
                             addCustomProperty('senderName', sender.name) //10 + 5-15 bytes
                             addCustomProperty('senderPicId', sender.pictureId) //11 + 8 bytes
