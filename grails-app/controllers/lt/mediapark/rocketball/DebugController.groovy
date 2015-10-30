@@ -94,6 +94,7 @@ class DebugController {
                 }
                 user.currLat = latOrigin - (rnd.nextDouble() / rnd.nextInt(10000))
                 user.currLng = lngOrigin + (rnd.nextDouble() / rnd.nextInt(10000))
+                user.isOnline = true
                 user.save()
                 result << user
                 userService.loggedInUsers << [(user.id): new Date().time]

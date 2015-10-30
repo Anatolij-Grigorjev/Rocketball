@@ -12,6 +12,8 @@ class User {
         passwordHash nullable: true
         salt nullable: true
         tempPassword nullable: false
+        isOnline nullable: true
+
     }
 
     static hasMany = [
@@ -31,6 +33,7 @@ class User {
     String deviceToken
     String registrationId
     Boolean tempPassword = Boolean.FALSE
+    Boolean isOnline = false
 
     boolean hasLocation() {
         this.currLat && this.currLng

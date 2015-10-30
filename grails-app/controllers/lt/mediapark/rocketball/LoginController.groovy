@@ -65,6 +65,8 @@ class LoginController {
         def fbId = Long.parseLong(params.id)
         def user = userService.userByFbId(fbId)
         if (user) {
+            user.isOnline = true
+            user.save()
             userService.loggedInUsers << [(user.id): 0]
             chatService.tryFlushMessagesAsync(user)
             def map = converterService.userToJSON(user)
@@ -86,6 +88,8 @@ class LoginController {
             }
             def hash = (password + user.salt).encodeAsSHA256()
             if (hash == user.passwordHash) {
+                user.isOnline = true
+                user.save()
                 userService.loggedInUsers << [(user.id): 0]
                 chatService.tryFlushMessagesAsync(user)
                 def map = converterService.userToJSON(user)

@@ -17,10 +17,11 @@ class UserService {
     SecureRandom secureRandom = new SecureRandom("This is a seed".bytes)
 
     Map<String, User> tempUsers = [:]
-    Map<Long, Long> loggedInUsers = Collections.synchronizedMap([:])
+    static Map<Long, Long> loggedInUsers = Collections.synchronizedMap([:])
 
     def finalizeUser(User user) {
         if (user.picture) user.picture.save()
+        user.isOnline = true
         user = user.save(flush: true)
         log.info("User ${user.name} added!")
         user

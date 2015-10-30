@@ -9,6 +9,8 @@ import com.relayrides.pushy.apns.util.SSLContextUtil
 import com.relayrides.pushy.apns.util.SimpleApnsPushNotification
 import com.relayrides.pushy.apns.util.TokenUtil
 import grails.util.Environment
+import lt.mediapark.rocketball.User
+import lt.mediapark.rocketball.UserService
 import lt.mediapark.rocketball.utils.Constants
 import rocketball.EmitterJob
 import rocketball.PurgerJob
@@ -68,13 +70,18 @@ class BootStrap {
         }
         grailsApplication.allArtefacts.each { klass -> addApnsMethods(klass) }
 
-
         //GCM
         gcmSender = new Sender(grails.gcm.browser.key)
         if (gcmSender) {
             log.info("GCM manager ${gcmSender?.toString()} initialized!")
         }
         grailsApplication.allArtefacts.each { klass -> addGCMMethods(klass) }
+
+        def onlineUsers = User.findAllWhere(isOnline: true)
+        log.info("Logging ${onlineUsers.size()} users back into system!")
+        if (onlineUsers) {
+            UserService.loggedInUsers.putAll(onlineUsers.collectEntries { [(it.id): new Date().time] })
+        }
     }
 
     private PushManager buildPushy(ConfigObject grails, String env) {
@@ -199,6 +206,11 @@ class BootStrap {
     }
 
     def destroy = {
+        //dump online users if we can
+        def onlineUsers = User.findAllByIdInList(UserService.loggedInUsers.keySet() as List)
+        onlineUsers.each { it.isOnline = true }
+        User.saveAll(onlineUsers)
+
         if (pushManagerDev?.isStarted()) {
             pushManagerDev.shutdown()
             //sleep after shutting down PUSHY to not leave Netty memory leaks

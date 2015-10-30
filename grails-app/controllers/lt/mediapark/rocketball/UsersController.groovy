@@ -109,6 +109,7 @@ class UsersController {
         if (user) {
             log.info("Logging out user ${user.id}!")
             userService.loggedInUsers.remove(user.id)
+            user.isOnline = false
             userService.clearCoords(user)
             return render(status: 200)
         } else {
