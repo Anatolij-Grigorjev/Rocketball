@@ -5,14 +5,19 @@ import lt.mediapark.rocketball.message.PhotoMessage
 import lt.mediapark.rocketball.message.VideoMessage
 import org.springframework.web.multipart.commons.CommonsMultipartFile
 
+import java.text.SimpleDateFormat
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
 @Transactional
 class MediaService {
 
+    static def dateBasedNameFormatter = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_")
+
     Picture saveAsAvatar(CommonsMultipartFile image, User uploader) {
-        Picture picture = new Picture(name: image.name, data: image.bytes)
+        Picture picture = new Picture(name: image.name ?:
+                (dateBasedNameFormatter.format(new Date()) + uploader.id + '.png')
+                , data: image.bytes)
         picture = picture.save()
         uploader.picture = picture
         uploader.save(flush: true)
