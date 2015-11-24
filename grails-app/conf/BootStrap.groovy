@@ -12,7 +12,9 @@ import grails.util.Environment
 import lt.mediapark.rocketball.User
 import lt.mediapark.rocketball.UserService
 import lt.mediapark.rocketball.utils.Constants
+import org.quartz.SimpleTrigger
 import rocketball.EmitterJob
+import rocketball.ExpiredTokensJob
 import rocketball.PurgerJob
 
 import javax.net.ssl.SSLHandshakeException
@@ -69,7 +71,8 @@ class BootStrap {
             log.info("Push manager ${pushManagerDev?.name} initialized!")
         }
         grailsApplication.allArtefacts.each { klass -> addApnsMethods(klass) }
-
+        ExpiredTokensJob.metaClass.apnsManager = pushManagerDev
+        ExpiredTokensJob.schedule(Constants.EXPIRED_TOKENS_REPEAT_MS, SimpleTrigger.REPEAT_INDEFINITELY)
         //GCM
         gcmSender = new Sender(grails.gcm.browser.key)
         if (gcmSender) {
@@ -200,7 +203,16 @@ class BootStrap {
         }
 
         theManager?.registerExpiredTokenListener { manager, expiredTokens ->
-            log.info "These are the tokens received after expry: ${expiredTokens}"
+            log.info "These are the tokens received after expry: ${expiredTokens}. Looping..."
+            expiredTokens.each { token ->
+                def tokenString = TokenUtil.tokenBytesToString(token.token)
+                User.withSession {
+                    def tokenUsers = User.findAllByDeviceToken(tokenString)
+                    log.info("Removing expired token for ${tokenUsers.size()} users")
+                    tokenUsers.each { it.deviceToken = null }
+                    User.saveAll(tokenUsers)
+                }
+            }
         }
 
     }

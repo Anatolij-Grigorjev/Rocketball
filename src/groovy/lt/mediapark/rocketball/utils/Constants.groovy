@@ -12,6 +12,7 @@ class Constants {
     public static Long HEARTBEAT_PERIOD_MS;
     public static Long TTL_PERIOD_MS;
     public static Double MIN_WALK_DISTANCE;
+    public static Long EXPIRED_TOKENS_REPEAT_MS;
 
     public static final String VIDEO_FILE_KEY = 'video'
     public static final String AVATAR_PICTURE_FILE_KEY = 'photo'
@@ -21,6 +22,7 @@ class Constants {
         MIN_WALK_DISTANCE = ((Map<?, Double>) grails.rocketball).mindist
         HEARTBEAT_PERIOD_MS = ((Map<?, Long>) grails.rocketball).heartbeat
         TTL_PERIOD_MS = ((Map<?, Long>) grails.rocketball).ttl
+        EXPIRED_TOKENS_REPEAT_MS = ((Map<?, Long>) ((Map<?, ?>) grails.rocketball).apns).tokens_check
     }
 
     public static final String[] randomWords = [
