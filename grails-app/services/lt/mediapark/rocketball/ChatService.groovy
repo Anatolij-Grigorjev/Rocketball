@@ -207,7 +207,7 @@ class ChatService {
     }
 
     private VideoMessage prepVideoMessage(User sender, User receiver, CommonsMultipartFile video) {
-        Video vidFile = mediaService.saveAsVideo(video)
+        Video vidFile = mediaService.saveAsMP4Video(video)
         VideoMessage videoMessage = new VideoMessage(sender: sender, receiver: receiver, video: vidFile)
         videoMessage.save()
     }

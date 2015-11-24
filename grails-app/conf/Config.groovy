@@ -136,7 +136,7 @@ environments {
 
 grails.rocketball.radius = 1000.1 // radius in meters
 grails.rocketball.mindist = 20.5 //minimum distance to walk from last position before coordinates get updated
-grails.rocketball.apns.tokens_check = 600000 //every 10 hours is enough
+grails.rocketball.apns.tokens_check = 6000000 //every 10 hours is enough
 
 environments {
     development {
