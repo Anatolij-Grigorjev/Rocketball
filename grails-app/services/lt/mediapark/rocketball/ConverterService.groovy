@@ -86,7 +86,7 @@ class ConverterService {
 
     Map contentJSON(PhotoMessage msg) {
         def map = [:]
-        if (msg?.photoAlbum) map['album'] = msg?.photoAlbum?.id
+        if (msg?.photoAlbum) map['album'] = msg?.photoAlbum?.photos?.id
 
         map
     }

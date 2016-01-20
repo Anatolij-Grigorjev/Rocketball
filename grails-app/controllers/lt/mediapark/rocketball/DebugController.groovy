@@ -62,6 +62,7 @@ class DebugController {
 
     def userService
     def converterService
+    def mailService
 
     def login = {
 //        if (Environment.DEVELOPMENT.equals(Environment.current)) {
@@ -163,6 +164,19 @@ class DebugController {
     def insys = {
         def results = [amount: userService.loggedInUsers.size(), users: userService.loggedInUsers]
         render results as JSON
+    }
+
+
+    def mail = {
+        mailService.sendMail {
+            to "<grigorjev.anatolij@gmail.com>"
+            from "Rocketball Support<support@rocketballapp.com>"
+            subject 'Rocketball password reset'
+            body(view: "/mail/resetPasswordEmail",
+                    model: [user: new User(name: 'Brave Tester'), tempPass: 'PASSed_test! '])
+        }
+
+        render(status: 200)
     }
 
 

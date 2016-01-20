@@ -130,7 +130,7 @@ class LoginController {
             try {
                 mailService.sendMail {
                     to "${user.name}<${email}>"
-                    from "Rocketball<support@rocketball.com>"
+                    from "Rocketball Support<support@rocketballapp.com>"
                     subject 'Rocketball password reset'
                     body(view: "/mail/resetPasswordEmail",
                             model: [user: user, tempPass: userService.generateTempPass(user)])

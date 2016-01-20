@@ -45,13 +45,12 @@ class MediaService {
         log.info("file command output: ${output}")
         //check if movie format received was MOV
         if (output.contains('Apple QuickTime')) {
-            log.info('Video format received was Apple Quicktiem, converting to MPEG!')
+            log.info('Video format received was Apple Quicktime, converting to MPEG!')
             def outFile = File.createTempFile('new_video', '.mp4')
-            log.info("Command: ${"ffmpeg -i ${inFile.absolutePath} -q 0 -y ${outFile.absolutePath}"}")
-            def conversion = "ffmpeg -i ${inFile.absolutePath} -q 0 -y ${outFile.absolutePath}".execute()
+            def command = "ffmpeg -i ${inFile.absolutePath} -q 0 -y -strict -2 ${outFile.absolutePath}"
+            log.info("Command: " + command)
+            def conversion = command.execute()
             conversion.waitFor()
-//            output = IOUtils.toString(conversion.in)
-//            log.info("Conversion process for file ${inFile.name}:\n${output}")
             video.data = outFile.bytes
             outFile.delete()
         } else {
