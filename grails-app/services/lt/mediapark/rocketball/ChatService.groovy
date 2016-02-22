@@ -243,4 +243,8 @@ class ChatService {
 
         recentMap.values().collect().sort { ChatMessage a, ChatMessage b -> b.sendDate <=> a.sendDate }
     }
+
+    def getUnreadCount(def senderId, def receiverId) {
+        ChatMessage.countBySenderAndReceiverAndReceiveDateIsNull(User.get(senderId), User.get(receiverId))
+    }
 }

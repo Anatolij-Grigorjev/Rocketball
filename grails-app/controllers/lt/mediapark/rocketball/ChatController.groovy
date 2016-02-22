@@ -117,7 +117,12 @@ class ChatController {
         }
         List<ChatMessage> listMessages = chatService.getChatsList(user)
         def map = listMessages.collect {
-            converterService.chatMessageToJSON(it, user)
+            //adding unread count to the received list of messages
+            def initMsg = converterService.chatMessageToJSON(it, user)
+            if (!initMsg?.receiveDate) {
+                initMsg?.unread = chatService.getUnreadCount(initMsg?.sender?.id, initMsg?.receiver?.id)
+            }
+            initMsg
         }
         def finMap = ['messages': map]
         render finMap as JSON
