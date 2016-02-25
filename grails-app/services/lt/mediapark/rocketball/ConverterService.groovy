@@ -33,6 +33,10 @@ class ConverterService {
             if (user?.hasLocation() && relation?.hasLocation()) {
                 map['distance'] = DistanceCalc.getHavershineDistance(user, relation)
             }
+          def unreadMessages = ChatMessage.countBySenderAndReceiverAndReceiveDateIsNull(user, relation)
+          if (unreadMessages) {
+            map['unread'] = unreadMessages
+          }
         } else {
             //returning user on their own, so we see their list of favorites/blocked
             map['favorite'] = user?.favorites?.id
