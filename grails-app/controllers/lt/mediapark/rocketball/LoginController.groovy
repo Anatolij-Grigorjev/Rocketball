@@ -1,6 +1,7 @@
 package lt.mediapark.rocketball
 
 import grails.converters.JSON
+import grails.util.Environment
 import org.springframework.web.multipart.commons.CommonsMultipartFile
 
 class LoginController {
@@ -109,7 +110,7 @@ class LoginController {
 
         if (email && password && !User.all.email.any { it.equals(email) }) {
 
-            User user = new User(email: email, isAdmin: false)
+            User user = new User(email: email, isAdmin: !(Environment.current == Environment.PRODUCTION))
             userService.updateUserPassword(user, password, false)
 
             def uuid = UUID.randomUUID().toString()
