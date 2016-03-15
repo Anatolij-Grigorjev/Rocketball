@@ -34,6 +34,7 @@ class User {
     String registrationId
     Boolean tempPassword = Boolean.FALSE
     Boolean isOnline = false
+    Boolean isAdmin = false
 
     boolean hasLocation() {
         this.currLat && this.currLng

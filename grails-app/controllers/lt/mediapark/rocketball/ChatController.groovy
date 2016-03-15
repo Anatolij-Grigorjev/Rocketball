@@ -119,7 +119,7 @@ class ChatController {
         def map = listMessages.collect {
             //adding unread count to the received list of messages
             def initMsg = converterService.chatMessageToJSON(it, user)
-            initMsg?.unread = chatService.getUnreadCount(initMsg?.sender?.id, initMsg?.receiver?.id)
+            initMsg?.unread = chatService.getUnreadCount(initMsg?.sender?.id, user.id)
             if (!initMsg?.unread) {
                 initMsg?.remove('unread')
             }
