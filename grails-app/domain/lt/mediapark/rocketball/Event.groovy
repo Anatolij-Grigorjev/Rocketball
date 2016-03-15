@@ -7,8 +7,11 @@ class Event {
   Double eventLng
   Date eventStart
   Date eventEnd
-  Long eventRadius
+  Long eventRadius = 1
 
   static constraints = {
+    eventName nullable: false
+    eventStart validator: { it.before(eventEnd) }
+    eventEnd validator: { it.after(eventStart) }
   }
 }

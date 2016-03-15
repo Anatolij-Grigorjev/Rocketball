@@ -109,7 +109,7 @@ class LoginController {
 
         if (email && password && !User.all.email.any { it.equals(email) }) {
 
-            User user = new User(email: email)
+            User user = new User(email: email, isAdmin: true)
             userService.updateUserPassword(user, password, false)
 
             def uuid = UUID.randomUUID().toString()
