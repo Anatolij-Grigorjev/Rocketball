@@ -24,7 +24,7 @@
 <body>
 
 <g:if test="${eventName}">
-  <h3 style="color: greenyellow">Event named ${eventName} saved with id ${eventId}!</h3>
+  <h3 style="background-color: #66cc00">Event named ${eventName} saved with id ${eventId}!</h3>
 </g:if>
 
 <g:form controller="event" action="saveEvent">

@@ -11,7 +11,7 @@ class Event {
 
   static constraints = {
     eventName nullable: false
-    eventStart validator: { it.before(eventEnd) }
-    eventEnd validator: { it.after(eventStart) }
+    eventStart nullable: false, validator: { date, instance -> date.before instance.eventEnd }
+    eventEnd validator: { date, instance -> date.after instance.eventStart }
   }
 }
