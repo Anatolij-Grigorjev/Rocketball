@@ -23,7 +23,7 @@
 
 <body>
 <h3>Please authenticate yourself!</h3>
-<g:form controller="event" action="makeForm">
+<g:form controller="event" action="performAuth">
   <table>
     <tr>
       <td><label>Name:</label></td>

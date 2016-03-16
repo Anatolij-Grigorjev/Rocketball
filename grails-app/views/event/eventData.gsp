@@ -23,46 +23,45 @@
 
 <body>
 
-<g:if test="${eventName}">
-  <h3 style="background-color: #66cc00">Event named ${eventName} saved with id ${eventId}!</h3>
-</g:if>
-
 <g:form controller="event" action="saveEvent">
   <table>
+    <tr style="display: none">
+      <g:textField name="id" value="${id}" style="display: none"/>
+    </tr>
     <tr>
       <td><label>Event Name:</label></td>
       <td>
-        <g:textField name="eventName" value=""/>
+        <g:textField name="eventName" value="${eventName}"/>
       </td>
     </tr>
     <tr>
       <td><label>Event Start Date:</label></td>
       <td>
-        <g:datePicker name="eventStart" value=""/>
+        <g:datePicker name="eventStart" value="${eventStart}"/>
       </td>
     </tr>
     <tr>
       <td><label>Event End Date:</label></td>
       <td>
-        <g:datePicker name="eventEnd" value=""/>
+        <g:datePicker name="eventEnd" value="${eventEnd}"/>
       </td>
     </tr>
     <tr>
       <td><label>Event Radius:</label></td>
       <td>
-        <g:textField name="eventRadius" value="1000"/>
+        <g:textField name="eventRadius" value="${eventRadius ?: 100}"/>
       </td>
     </tr>
     <tr>
       <td><label>Event Longitude:</label></td>
       <td>
-        <g:textField name="eventLng" value=""/>
+        <g:textField name="eventLng" value="${eventLng}"/>
       </td>
     </tr>
     <tr>
       <td><label>Event Latitude:</label></td>
       <td>
-        <g:textField name="eventLat" value=""/>
+        <g:textField name="eventLat" value="${eventLat}"/>
       </td>
     </tr>
   </table>

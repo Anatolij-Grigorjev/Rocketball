@@ -11,7 +11,8 @@ class EventController {
   static String currentToken
 
   static allowedMethods = [
-    auth: 'GET'
+    auth       : 'GET',
+    performAuth: 'POST'
   ]
   public static final String ROCKETBALL_AUTH = 'X-Rocketball-Auth'
 
@@ -22,10 +23,10 @@ class EventController {
       if (user?.isAdmin) {
         render(view: 'inputAuth', model: [name: user.name])
       } else {
-        render 403
+        render(status: 403)
       }
     } else {
-      render 400
+      render(status: 400)
     }
   }
 
@@ -33,32 +34,76 @@ class EventController {
     def token = request.cookies.find { it.name == ROCKETBALL_AUTH }?.value
     if (token?.equals(currentToken)) {
       def event = eventService.saveEvent(params)
-      redirect(controller: 'event', action: 'makeForm', params: [eventName: event?.eventName, eventId: event?.id])
+      redirect(controller: 'event', action: 'list', params: [eventAction: 'save'
+                                                             , eventName: event?.eventName
+                                                             , eventId  : event?.id]
+      )
     } else {
-      render 403
+      render(status: 403)
+    }
+  }
+
+  def list() {
+
+    def token = request.cookies.find { it.name == ROCKETBALL_AUTH }?.value
+    if (token?.equals(currentToken)) {
+      render(view: 'eventList', model: [events       : Event.all
+                                        , eventName  : params.eventName
+                                        , eventAction: params.eventAction
+                                        , eventId    : params.eventId]
+      )
+    } else {
+      render(status: 403)
+    }
+  }
+
+  def performAuth() {
+    String email = params.email
+    String password = params.password
+    if (email && password) {
+      def user = User.findByEmail(email)
+      if (!user || !user.isAdmin) {
+        return render(status: 403)
+      }
+      def hash = (password + user.salt).encodeAsSHA256()
+      if (hash == user.passwordHash) {
+        currentToken = UUID.randomUUID().toString()
+        def cookie = new Cookie(ROCKETBALL_AUTH, currentToken)
+        response.addCookie(cookie)
+        redirect(controller: 'event', action: 'list')
+      } else {
+        return render(status: 401)
+      }
+    } else {
+      return render(status: 400)
+    }
+  }
+
+  def delete() {
+    def token = request.cookies.find { it.name == ROCKETBALL_AUTH }?.value
+    if (token?.equals(currentToken) && params.id) {
+      def event = eventService.deleteEvent(params.id)
+      redirect(controller: 'event', action: 'list', params: [eventAction: 'del'
+                                                             , eventName: event?.eventName
+                                                             , eventId  : event?.id]
+      )
+    } else {
+      render(status: 403)
     }
   }
 
   def makeForm() {
-    if (!params.eventName) {
-      String email = params.email
-      String password = params.password
-      if (email && password) {
-        def user = User.findByEmail(email)
-        if (!user || !user.isAdmin) {
-          return render(status: 403)
-        }
-        def hash = (password + user.salt).encodeAsSHA256()
-        if (hash == user.passwordHash) {
-          currentToken = UUID.randomUUID().toString()
-          response.addCookie(new Cookie(ROCKETBALL_AUTH, currentToken))
-        } else {
-          return render(status: 401)
-        }
-      } else {
-        return render(status: 400)
+    def token = request.cookies.find { it.name == ROCKETBALL_AUTH }?.value
+    if (token?.equals(currentToken)) {
+      def model = [:]
+      if (params.id) {
+        model << [id: params.id]
+        model.putAll(Event.get(Converter.coerceToLong(params.id))?.properties)
       }
+      println "model: ${model}"
+      render(view: 'eventData', model: model)
+    } else {
+      render(status: 403)
     }
-    render(view: 'eventData', model: [eventName: params.eventName, eventId: params.eventId])
   }
 }

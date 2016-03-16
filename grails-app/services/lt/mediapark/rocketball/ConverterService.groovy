@@ -78,6 +78,9 @@ class ConverterService {
         if (user?.id) map['id'] = user.id
         map['registrationId'] = user.registrationId
         map['deviceToken'] = user.deviceToken
+      if (user?.isAdmin) {
+        map['isAdmin'] = user.isAdmin
+      }
         map
     }
 
