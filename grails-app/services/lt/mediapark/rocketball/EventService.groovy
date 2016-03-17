@@ -28,11 +28,12 @@ class EventService {
     }
   }
 
-  Event getClosestEvent(def lat, def lng) {
+  Event getClosestEvent(User user) {
     //check for user location in an event type place
     def possibleEvents = Event.findAllByEventStartLessThanEqualsAndEventEndGreaterThanEquals(new Date(), new Date())
     def firstEvent = possibleEvents.find {
-      DistanceCalc.getHavershineDistance(it.eventLat, it.eventLng, lat, lng) < it.eventRadius
+      def distance = DistanceCalc.getHavershineDistance(it.eventLat, it.eventLng, user?.currLat, user?.currLng)
+      distance < it.eventRadius
     }
 
     firstEvent

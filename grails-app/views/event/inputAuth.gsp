@@ -43,11 +43,10 @@
         <g:passwordField value="" name="password"/>
       </td>
     </tr>
-    <tr>
-      <g:submitButton name="submit" value="Continue"/>
-    </tr>
   </table>
-
+  <tr>
+    <g:submitButton name="submit" value="Continue"/>
+  </tr>
 </g:form>
 
 </body>

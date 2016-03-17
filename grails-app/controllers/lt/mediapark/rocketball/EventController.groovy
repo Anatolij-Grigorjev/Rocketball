@@ -1,5 +1,6 @@
 package lt.mediapark.rocketball
 
+import grails.util.Environment
 import lt.mediapark.rocketball.utils.Converter
 
 import javax.servlet.http.Cookie
@@ -59,7 +60,7 @@ class EventController {
 
   def performAuth() {
     String email = params.email
-    String password = params.password
+    String password = !(Environment.current == Environment.PRODUCTION) ? params.password : params.password?.encodeAsSHA1()
     if (email && password) {
       def user = User.findByEmail(email)
       if (!user || !user.isAdmin) {
@@ -100,7 +101,6 @@ class EventController {
         model << [id: params.id]
         model.putAll(Event.get(Converter.coerceToLong(params.id))?.properties)
       }
-      println "model: ${model}"
       render(view: 'eventData', model: model)
     } else {
       render(status: 403)

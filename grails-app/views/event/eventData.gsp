@@ -16,7 +16,7 @@
 
   td + td {
     text-align: left;
-    width: 300px;
+    width: 500px;
   }
   </style>
 </head>
@@ -49,19 +49,19 @@
     <tr>
       <td><label>Event Radius:</label></td>
       <td>
-        <g:textField name="eventRadius" value="${eventRadius ?: 100}"/>
+        <g:field type="number" name="eventRadius" value="${eventRadius ?: 100}"/>
       </td>
     </tr>
     <tr>
       <td><label>Event Longitude:</label></td>
       <td>
-        <g:textField name="eventLng" value="${eventLng}"/>
+        <g:field type="decimal" name="eventLng" value="${eventLng}"/>
       </td>
     </tr>
     <tr>
       <td><label>Event Latitude:</label></td>
       <td>
-        <g:textField name="eventLat" value="${eventLat}"/>
+        <g:field type="decimal" name="eventLat" value="${eventLat}"/>
       </td>
     </tr>
   </table>

@@ -81,7 +81,7 @@ class UserService {
     }
     mapList = filtered?.collect { converterService.userToJSON(it, user) } as List<Map>
     mapList.sort(true) { a, b -> a.distance <=> b.distance }
-    def event = eventService.getClosestEvent(user.currLat, user.currLng)
+    def event = eventService.getClosestEvent(user)
     [users: mapList, event: event?.eventName]
   }
 
