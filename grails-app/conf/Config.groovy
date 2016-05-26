@@ -1,3 +1,6 @@
+import org.quartz.*
+import rocketball.PurgerJob
+
 // locations to search for config files that get merged into the main config;
 // config files can be ConfigSlurper scripts, Java properties files, or classes
 // in the classpath in ConfigSlurper format
@@ -43,20 +46,20 @@ grails.controllers.defaultScope = 'singleton'
 
 // GSP settings
 grails {
-    views {
-        gsp {
-            encoding = 'UTF-8'
-            htmlcodec = 'xml' // use xml escaping instead of HTML4 escaping
-            codecs {
-                expression = 'html' // escapes values inside ${}
-                scriptlet = 'html' // escapes output from scriptlets in GSPs
-                taglib = 'none' // escapes output from taglibs
-                staticparts = 'none' // escapes output from static template parts
-            }
-        }
-        // escapes all not-encoded output at final stage of outputting
-        // filteringCodecForContentType.'text/html' = 'html'
+  views {
+    gsp {
+      encoding = 'UTF-8'
+      htmlcodec = 'xml' // use xml escaping instead of HTML4 escaping
+      codecs {
+        expression = 'html' // escapes values inside ${}
+        scriptlet = 'html' // escapes output from scriptlets in GSPs
+        taglib = 'none' // escapes output from taglibs
+        staticparts = 'none' // escapes output from static template parts
+      }
     }
+    // escapes all not-encoded output at final stage of outputting
+    // filteringCodecForContentType.'text/html' = 'html'
+  }
 }
 
 
@@ -86,26 +89,26 @@ grails.hibernate.pass.readonly = false
 grails.hibernate.osiv.readonly = false
 // make all properties nullable by default
 grails.gorm.default.constraints = {
-    '*'(nullable: true)
+  '*'(nullable: true)
 }
 grails.gorm.default.mapping = {
-    dynamicUpdate(true)
-    version(false)
+  dynamicUpdate(true)
+  version(false)
 }
 
 //APNS config for dev pushing with prod fallback
 
 environments {
-    development {
-        grails.apns.dev.p12.path = '/opt/tomcat-rocketball-test/cert/rocketball_dev.p12'
-        grails.apns.dev.p12.local.path = '/Users/anatolij/Documents/RocketBallDev.p12'
-        grails.apns.prod.p12.path = '/opt/tomcat-rocketball-test/cert/rocketball_prod.p12'
-        grails.apns.prod.p12.local.path = '/Users/anatolij/Documents/RocketBallProd.p12'
-    }
-    production {
-        grails.apns.dev.p12.path = '/opt/tomcat-rocketball/cert/rocketball_dev.p12'
-        grails.apns.prod.p12.path = '/opt/tomcat-rocketball/cert/rocketball_prod.p12'
-    }
+  development {
+    grails.apns.dev.p12.path = '/opt/tomcat-rocketball-test/cert/rocketball_dev.p12'
+    grails.apns.dev.p12.local.path = '/Users/anatolij/Documents/RocketBallDev.p12'
+    grails.apns.prod.p12.path = '/opt/tomcat-rocketball-test/cert/rocketball_prod.p12'
+    grails.apns.prod.p12.local.path = '/Users/anatolij/Documents/RocketBallProd.p12'
+  }
+  production {
+    grails.apns.dev.p12.path = '/opt/tomcat-rocketball/cert/rocketball_dev.p12'
+    grails.apns.prod.p12.path = '/opt/tomcat-rocketball/cert/rocketball_prod.p12'
+  }
 }
 
 grails.apns.dev.p12.password = 'RocketBall2015'
@@ -125,75 +128,98 @@ grails.gorm.failOnError = true
 grails.config.locations = ["file:Quartz-config.groovy"]
 
 environments {
-    development {
-        grails.logging.jul.usebridge = true
-    }
-    production {
-        grails.logging.jul.usebridge = false
-        // TODO: grails.serverURL = "http://www.changeme.com"
-    }
+  development {
+    grails.logging.jul.usebridge = true
+  }
+  production {
+    grails.logging.jul.usebridge = false
+    // TODO: grails.serverURL = "http://www.changeme.com"
+  }
 }
 
-grails.rocketball.radius = 1000.1 // radius in meters
+grails.rocketball.radius = 1000.0 // radius in meters
 grails.rocketball.mindist = 20.5 //minimum distance to walk from last position before coordinates get updated
 grails.rocketball.apns.tokens_check = 6000000 //every 10 hours is enough
 
 environments {
-    development {
-        grails.rocketball.heartbeat = 60000 //60 seconds in ms
-        grails.rocketball.ttl = 300000 //5 min in ms
-    }
-    production {
-        grails.rocketball.heartbeat = 300000 //5 min in ms
-        grails.rocketball.ttl = 1200000 //20 min in ms
-    }
+  development {
+    grails.rocketball.heartbeat = 25000 //25 seconds in ms
+    grails.rocketball.ttl = 300000 //5 min in ms
+  }
+  production {
+    grails.rocketball.heartbeat = 25000 //25 seconds in ms
+    grails.rocketball.ttl = 600000 //10 min in ms
+  }
 }
 
 grails {
-    mail {
-        host = "rododendras.serveriai.lt"
-        port = 465
-        username = "support@rocketballapp.com"
-        password = "UzneikisDeselioti"
-        props = ["mail.smtp.auth"                  : "true",
-                 "mail.smtp.socketFactory.port"    : "465",
-                 "mail.smtp.socketFactory.class"   : "javax.net.ssl.SSLSocketFactory",
-                 "mail.smtp.socketFactory.fallback": "false"]
-    }
+  mail {
+    host = "rododendras.serveriai.lt"
+    port = 465
+    username = "support@rocketballapp.com"
+    password = "UzneikisDeselioti"
+    props = ["mail.smtp.auth"                  : "true",
+             "mail.smtp.socketFactory.port"    : "465",
+             "mail.smtp.socketFactory.class"   : "javax.net.ssl.SSLSocketFactory",
+             "mail.smtp.socketFactory.fallback": "false"]
+  }
 }
 
 // log4j configuration
 log4j.main = {
-    // Example of changing the log pattern for the default console appender:
-    //
-    //appenders {
-    //    console name:'stdout', layout:pattern(conversionPattern: '%c{2} %m%n')
-    //}
-    environments {
-        development {
-            debug 'grails.app.controllers',        // controllers
-                    'grails.app.services',          //services
-                    'grails.app.filters',           //filters
-                    'grails.app'                    //bootstrap
-        }
-        production {
-            info 'grails.app.controllers',        // controllers
-                    'grails.app.services',          //services
-                    'grails.app.filters',           //filters
-                    'grails.app'
-        }
+  // Example of changing the log pattern for the default console appender:
+  //
+  //appenders {
+  //    console name:'stdout', layout:pattern(conversionPattern: '%c{2} %m%n')
+  //}
+  environments {
+    development {
+      debug 'grails.app.controllers',        // controllers
+        'grails.app.services',          //services
+        'grails.app.filters',           //filters
+        'grails.app'                    //bootstrap
     }
+    production {
+      info 'grails.app.controllers',        // controllers
+        'grails.app.services',          //services
+        'grails.app.filters',           //filters
+        'grails.app'
+    }
+  }
 
 
-    error 'org.codehaus.groovy.grails.web.servlet',        // controllers
-            'org.codehaus.groovy.grails.web.pages',          // GSP
-            'org.codehaus.groovy.grails.web.sitemesh',       // layouts
-            'org.codehaus.groovy.grails.web.mapping.filter', // URL mapping
-            'org.codehaus.groovy.grails.web.mapping',        // URL mapping
-            'org.codehaus.groovy.grails.commons',            // core / classloading
-            'org.codehaus.groovy.grails.plugins',            // plugins
-            'org.codehaus.groovy.grails.orm.hibernate',      // hibernate integration
-            'org.springframework',
-            'org.hibernate',
-            'net.sf.ehcache.hibernate'
+  error 'org.codehaus.groovy.grails.web.servlet',        // controllers
+    'org.codehaus.groovy.grails.web.pages',          // GSP
+    'org.codehaus.groovy.grails.web.sitemesh',       // layouts
+    'org.codehaus.groovy.grails.web.mapping.filter', // URL mapping
+    'org.codehaus.groovy.grails.web.mapping',        // URL mapping
+    'org.codehaus.groovy.grails.commons',            // core / classloading
+    'org.codehaus.groovy.grails.plugins',            // plugins
+    'org.codehaus.groovy.grails.orm.hibernate',      // hibernate integration
+    'org.springframework',
+    'org.hibernate',
+    'net.sf.ehcache.hibernate'
+}
+
+//job to remove stale unverified users (that didn't respond to the emails)
+grails.plugin.quartz2.jobSetup.staleUserCoordinatesPurgerJob = { quartzScheduler, ctx ->
+
+  //wrap executor into job detail
+  JobDetail jobDetail = JobBuilder.newJob(PurgerJob.class)
+    .withIdentity('StaleCoordsCleaner')
+  //5 minutes in millis - length of time the player has for their entry
+//    .usingJobData(new JobDataMap([verificationTTL: pickmonster.user.verification.ttl]))
+    .build()
+
+  //create trigger to run this every 10 minutes
+  Trigger trigger = TriggerBuilder.newTrigger()
+    .withIdentity('StaleCoordsCleaner')
+    .withSchedule(SimpleScheduleBuilder.simpleSchedule()
+    .withIntervalInMilliseconds(grails.rocketball.ttl)
+    .repeatForever())
+    .startNow()
+    .build()
+
+  //start the damned thing
+  quartzScheduler.scheduleJob(jobDetail, trigger)
 }

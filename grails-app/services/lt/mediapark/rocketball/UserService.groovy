@@ -71,12 +71,12 @@ class UserService {
       not {
         'in'('id', [userId])
       }
+      eq 'isOnline', true
     } as List<User>
 
     def mapList
-    List<User> filtered = []
-    filtered = users.findAll {
-      (DistanceCalc.getHavershineDistance(it, user) <= Constants.PEOPLE_RADIUS_M
+    List<User> filtered = users.findAll {
+      (DistanceCalc.getHavershineDistance(it, user) < Constants.PEOPLE_RADIUS_M
         && !it.blocked?.contains(user))
     }
     mapList = filtered?.collect { converterService.userToJSON(it, user) } as List<Map>
