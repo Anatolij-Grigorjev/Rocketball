@@ -95,7 +95,8 @@ class UserService {
       if (distance > Constants.MIN_WALK_DISTANCE) {
         user.currLng = coords.lng
         user.currLat = coords.lat
-        loggedInUsers[(user.id)] = new Date().time
+        loggedInUsers[(user.id)] = System.currentTimeMillis()
+        user.lastGPSUpdate = new Date(loggedInUsers[(user.id)])
         if (!user.userFbId || user.userFbId > 0)
           log.debug("Updated user coords! User ${user.name} is now at (${coords.lat};${coords.lng})")
         user.save(flush: true)

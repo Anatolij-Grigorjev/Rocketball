@@ -1,7 +1,6 @@
 package lt.mediapark.rocketball
 
 import grails.converters.JSON
-import lt.mediapark.rocketball.utils.Constants
 
 class UsersController {
 
@@ -34,6 +33,8 @@ class UsersController {
             }
             def map = converterService.userToJSON(user, requestorUser)
 
+
+            log.debug("Response BODY: ${map}")
             render map as JSON
         }
     }
@@ -47,6 +48,7 @@ class UsersController {
             return render(["registered": false] as JSON)
         }
 
+        log.debug("Response BODY: ${list}")
         render list as JSON
 
     }
@@ -59,10 +61,10 @@ class UsersController {
         }
         //no point in updating too fast
         Long lastUpdate = userService.loggedInUsers[(user.id)]
-        if ((lastUpdate != null) && (new Date().time - lastUpdate) > Constants.HEARTBEAT_PERIOD_MS) {
-            userService.updateCoords(user, (Map) request.JSON)
-        }
-
+//        if ((lastUpdate != null) && (new Date().time - lastUpdate) > Constants.HEARTBEAT_PERIOD_MS) {
+        def coordUser = userService.updateCoords(user, (Map) request.JSON)
+//        }
+        log.debug("Response BODY: ${coordUser}")
         render 200
     }
 
@@ -73,7 +75,7 @@ class UsersController {
         }
         user = userService.updateUser(user, (Map) request.JSON)
         def map = converterService.userToJSON(user)
-
+        log.debug("Response BODY: ${map}")
         render map as JSON
     }
 
@@ -101,6 +103,7 @@ class UsersController {
         def map = [registered: (!!user),
                    name      : (user ? user.name : null),
                    loggedIn  : (userService.loggedInUsers.containsKey(user.id))]
+        log.debug("Response BODY: ${map}")
         render map as JSON
     }
 

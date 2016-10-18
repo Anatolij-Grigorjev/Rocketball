@@ -138,7 +138,7 @@ environments {
 }
 
 grails.rocketball.radius = 1000.0 // radius in meters
-grails.rocketball.mindist = 20.5 //minimum distance to walk from last position before coordinates get updated
+grails.rocketball.mindist = 0.1 //minimum distance to walk from last position before coordinates get updated
 grails.rocketball.apns.tokens_check = 6000000 //every 10 hours is enough
 
 environments {
@@ -180,9 +180,9 @@ log4j.main = {
         'grails.app'                    //bootstrap
     }
     production {
+      debug 'grails.app.filters'
       info 'grails.app.controllers',        // controllers
         'grails.app.services',          //services
-        'grails.app.filters',           //filters
         'grails.app'
     }
   }

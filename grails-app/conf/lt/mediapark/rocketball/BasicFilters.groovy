@@ -17,7 +17,7 @@ class BasicFilters {
                 log.debug("RESPONSE:\n" +
                         "------------------------------------------------------------\n" +
                         "Status code: ${response.status}\n" +
-                        "HEADERS: ${response.getHeaderNames().collect { it + "=" + response.getHeader(it) }}")
+                        "HEADERS: ${response.getHeaderNames().collect { it + "=" + response.getHeader(it) }}\n")
             }
         }
     }
